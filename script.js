@@ -43,12 +43,23 @@ function draw(){
         throttle = throttle* 0.99;
     }
 
-
     if(kb.pressing ('a')){
-        pitch = pitch + (1 * throttle)
+        if(pitch <= -85){
+            pitch = pitch;
+        } else{
+                pitch = pitch - (1 * throttle)
+        }
     }
 
+    if(kb.pressing ('d')){
+        if(pitch >= 85){
+            pitch = pitch;
+        } else{
+                pitch = pitch + (1 * throttle)
+        }
+    }
     console.log(pitch)
+    plane.rotation = pitch
     plane.vel.x = throttle;
 
 
