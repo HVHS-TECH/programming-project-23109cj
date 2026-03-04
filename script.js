@@ -1,7 +1,11 @@
 console.log("script.js")
 
-let throttle = 0;
+let throttle = 0.5;
 let pitch = 0;
+let verticalSpeed = 0;
+let horizontalSpeed = 0;
+const GRAVITY = 5;
+const LIFTCOEFFICENT =0.3;
 
 //plane source = https://images.fineartamerica.com/images-medium-large-5/2-illustration-of-an-a-7e-corsair-ii-inkworm.jpg
 
@@ -12,9 +16,10 @@ function preload() {
 }
 
 function setup(){
+    world.gravity.y = 10;
     cnv = new Canvas(windowWidth, windowHeight);
     const GROUND_HEIGHT = windowHeight - windowHeight/6;
-
+    angleMode(DEGREES);
 
     plane = new Sprite(windowWidth/6, 600, 40, 20, 'd');
     plane.image = (imgPlane);
@@ -28,26 +33,34 @@ function setup(){
     ground.color = '#00ff00';
 }
 
+
+
+
+
 function draw(){
     background('#0000ff');
 
+
+    //--------------------------------------------
+    //Take keyboard input
+    //--------------------------------------------
     if(kb.pressing ('w')){
-        if(throttle == 0){
-            throttle = 0.1;
-        }else {
-               throttle = throttle* 1.01;
+        if(throttle <= 60){
+            throttle = throttle * 1.1;
         }
     }
 
     if(kb.pressing ('s')){
-        throttle = throttle* 0.99;
+        if(throttle >= 0.1){
+            throttle = throttle * 0.99;
+        }
     }
 
     if(kb.pressing ('a')){
-        if(pitch <= -85){
+        if(pitch <= -65){
             pitch = pitch;
         } else{
-                pitch = pitch - (1 * throttle)
+                pitch = pitch - (1 * Math.sqrt(throttle));
         }
     }
 
@@ -55,13 +68,22 @@ function draw(){
         if(pitch >= 85){
             pitch = pitch;
         } else{
-                pitch = pitch + (1 * throttle)
+                pitch = pitch + (1 * Math.sqrt(throttle))
         }
     }
-    console.log(pitch)
-    plane.rotation = pitch
-    plane.vel.x = throttle;
 
+    //--------------------------------------------
+    //calculate vertical and horizontal speeds based on pitch and throttle - vetical speed add gravity aswell
+    //--------------------------------------------
+    horizontalSpeed = Math.abs( throttle);
+    
+    verticalSpeed = verticalSpeed - (LIFTCOEFFICENT * throttle * Math.sin(pitch))  + GRAVITY;
 
+    //--------------------------------------------
+    //Apply rotation and movement to the plane
+    //--------------------------------------------
+    plane.rotation = pitch;
+    plane.vel.x = horizontalSpeed;
+    plane.vel.y = verticalSpeed;
 
 }
