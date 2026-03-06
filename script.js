@@ -40,6 +40,8 @@ function setup(){
 
 //--------------------------------------------
 //calculate vertical and horizontal speeds based on pitch and throttle - vetical speed add gravity aswell
+//functions take 3 input parameters - speed, angle of flight (pitch /AoA), and lift coeffient,
+//functions return horizontal speed and vertical speed respectivily 
 //--------------------------------------------
 
 function calculateHorizontalVelocityVectors(_speed, _angle, _liftOfObject){
@@ -48,8 +50,6 @@ function calculateHorizontalVelocityVectors(_speed, _angle, _liftOfObject){
     return horizontalSpeed;
 }
     
-
-
 function calculateVerticalVelocityVectors(_speed, _angle, _liftOfObject){
     let verticalSpeed = 0;
     verticalSpeed = (-1 * _speed * (Math.sin(_angle) + Math.sin(90 - _angle) * _liftOfObject)) + GRAVITY;
@@ -102,7 +102,7 @@ function draw(){
     //--------------------------------------------
         plane.rotation = pitch;
         plane.vel.x = calculateHorizontalVelocityVectors(throttle,pitch,LIFTCOEFFICENT);
-        plane.vel.y = verticalSpeed;
+        plane.vel.y = calculateVerticalVelocityVectors(throttle,pitch,LIFTCOEFFICENT);
         console.log(plane.x)
         console.log(plane.y)
 
