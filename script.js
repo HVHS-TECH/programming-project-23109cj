@@ -37,11 +37,28 @@ function setup(){
 }
 
 
+
 //--------------------------------------------
+//calculate vertical and horizontal speeds based on pitch and throttle - vetical speed add gravity aswell
+//--------------------------------------------
+
+function calculateVelocityVectors(_speed, _angle, _liftOfObject){
+    horizontalSpeed = Math.abs( _speed * (Math.cos(_angle) - Math.cos(90 - _angle) * _liftOfObject));
+    verticalSpeed = (-1 * _speed * (Math.sin(_angle) + Math.sin(90 - _angle) * _liftOfObject)) + GRAVITY;
+    return horizontalSpeed, verticalSpeed;
+}
+    
+function draw(){
+    let verticalSpeed = 0;
+    let horizontalSpeed = 0;
+    background('#0000ff');
+
+
+    
+    //--------------------------------------------
     //Take keyboard input
     //--------------------------------------------
-function keyboardInput(){
-        if(kb.pressing ('w')){
+    if(kb.pressing ('w')){
             if(throttle <= 60){
                 throttle = throttle * 1.1;
             }
@@ -67,35 +84,15 @@ function keyboardInput(){
             } else{
                     pitch = pitch + (1 * Math.sqrt(throttle))
             }
-        }
-        return pitch, throttle;
-    }
+        }    
 
 
-//--------------------------------------------
-//calculate vertical and horizontal speeds based on pitch and throttle - vetical speed add gravity aswell
-//--------------------------------------------
-
-function calculateVelocityVectors(_speed, _angle, _liftOfObject){
-    horizontalSpeed = Math.abs( _speed * (Math.cos(_angle) - Math.cos(90 - _angle) * _liftOfObject));
-    verticalSpeed = (-1 * _speed * (Math.sin(_angle) + Math.sin(90 - _angle) * _liftOfObject)) + GRAVITY;
-    return horizontalSpeed, verticalSpeed;
-}
-    
-function draw(){
-    let verticalSpeed = 0;
-    let horizontalSpeed = 0;
-    background('#0000ff');
-
-    keyboardInput()    
     calculateVelocityVectors(throttle,pitch,LIFTCOEFFICENT)
 
     //--------------------------------------------
     //move camera & ground
     //--------------------------------------------
         camera.moveTo(plane.x + 2/6 * windowWidth, plane.y, 12);
-        //ground.x = (camera.x);
-
 
     //--------------------------------------------
     //Apply rotation and movement to the plane
