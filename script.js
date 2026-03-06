@@ -58,8 +58,6 @@ function calculateVerticalVelocityVectors(_speed, _angle, _liftOfObject){
 
 function draw(){
     background('#0000ff');
-
-
     
     //--------------------------------------------
     //Take keyboard input
