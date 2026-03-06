@@ -42,15 +42,21 @@ function setup(){
 //calculate vertical and horizontal speeds based on pitch and throttle - vetical speed add gravity aswell
 //--------------------------------------------
 
-function calculateVelocityVectors(_speed, _angle, _liftOfObject){
+function calculateHorizontalVelocityVectors(_speed, _angle, _liftOfObject){
+    let horizontalSpeed = 0;
     horizontalSpeed = Math.abs( _speed * (Math.cos(_angle) - Math.cos(90 - _angle) * _liftOfObject));
-    verticalSpeed = (-1 * _speed * (Math.sin(_angle) + Math.sin(90 - _angle) * _liftOfObject)) + GRAVITY;
-    return horizontalSpeed, verticalSpeed;
+    return horizontalSpeed;
 }
     
-function draw(){
+
+
+function calculateVerticalVelocityVectors(_speed, _angle, _liftOfObject){
     let verticalSpeed = 0;
-    let horizontalSpeed = 0;
+    verticalSpeed = (-1 * _speed * (Math.sin(_angle) + Math.sin(90 - _angle) * _liftOfObject)) + GRAVITY;
+    return verticalSpeed;
+}
+
+function draw(){
     background('#0000ff');
 
 
@@ -87,7 +93,6 @@ function draw(){
         }    
 
 
-    calculateVelocityVectors(throttle,pitch,LIFTCOEFFICENT)
 
     //--------------------------------------------
     //move camera & ground
@@ -98,7 +103,7 @@ function draw(){
     //Apply rotation and movement to the plane
     //--------------------------------------------
         plane.rotation = pitch;
-        plane.vel.x = horizontalSpeed;
+        plane.vel.x = calculateHorizontalVelocityVectors(throttle,pitch,LIFTCOEFFICENT);
         plane.vel.y = verticalSpeed;
         console.log(plane.x)
         console.log(plane.y)
