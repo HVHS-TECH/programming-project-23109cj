@@ -7,16 +7,16 @@ const GRAVITY = 5;
 const LIFTCOEFFICENT =0.3;
 const DRAG = 6;
 
-//plane source = https://images.fineartamerica.com/images-medium-large-5/2-illustration-of-an-a-7e-corsair-ii-inkworm.jpg
+//plane img source = https://images.fineartamerica.com/images-medium-large-5/2-illustration-of-an-a-7e-corsair-ii-inkworm.jpg
 
 function preload() {
-
-  imgPlane   = loadImage('A7.png');
+    console.log('preload()')
+    imgPlane   = loadImage('A7.png');
 
 }
 
 function setup(){
-
+    console.log('setup()')
     frameRate(10)
 
     cnv = new Canvas(windowWidth, windowHeight);
@@ -56,7 +56,17 @@ function calculateVerticalVelocityVectors(_speed, _angle, _liftOfObject){
     return verticalSpeed;
 }
 
+//-------------------------------------------------------
+//create clouds
+//-------------------------------------------------------
+function createClouds(){
+    cloudGroup = new Group();
+    for()
+}
+
+
 function draw(){
+    console.log('draw()')
     background('#0000ff');
     
     //--------------------------------------------
@@ -103,7 +113,4 @@ function draw(){
         plane.rotation = pitch;
         plane.vel.x = calculateHorizontalVelocityVectors(throttle,pitch,LIFTCOEFFICENT);
         plane.vel.y = calculateVerticalVelocityVectors(throttle,pitch,LIFTCOEFFICENT);
-        console.log(plane.x)
-        console.log(plane.y)
-
 }
