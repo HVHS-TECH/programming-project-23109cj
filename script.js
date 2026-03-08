@@ -7,21 +7,23 @@ const GRAVITY = 5;
 const LIFTCOEFFICENT =0.3;
 const DRAG = 6;
 
+
 //plane img source = https://images.fineartamerica.com/images-medium-large-5/2-illustration-of-an-a-7e-corsair-ii-inkworm.jpg
 
 function preload() {
     console.log('preload()')
     imgPlane   = loadImage('A7.png');
-
+    imgCloud   = loadImage('Cloud.png');
+    
 }
 
 function setup(){
     console.log('setup()')
-    frameRate(10)
+    angleMode(DEGREES);
+    const GROUND_HEIGHT = windowHeight - windowHeight/6;
+    createClouds(GROUND_HEIGHT);
 
     cnv = new Canvas(windowWidth, windowHeight);
-    const GROUND_HEIGHT = windowHeight - windowHeight/6;
-    angleMode(DEGREES);
 
     plane = new Sprite(windowWidth/6, GROUND_HEIGHT, 20, 20, 'd');
     plane.image = (imgPlane);
@@ -34,9 +36,23 @@ function setup(){
     ground.color = '#00ff00';
     ground.bouncieness = 0;
 
+    wallLeft = new Sprite(0,windowHeight/2,5, windowHeight, 'k')
+    wallLeft.visible = false;
+
 }
 
-
+//-------------------------------------------------------
+//create clouds
+//-------------------------------------------------------
+function createClouds(_groundHeight){
+    cloudGroup = new Group();
+    for(i=0; i<=2; i++){
+        cloud = new Sprite(windowWidth, random(0,_groundHeight), 10, 10, 'n')
+        cloud.image = (imgCloud);
+        cloud.image.scale = 0.5;
+        cloudGroup.add(cloud);
+    }
+}
 
 //--------------------------------------------
 //calculate vertical and horizontal speeds based on pitch and throttle - vetical speed add gravity aswell
@@ -56,13 +72,12 @@ function calculateVerticalVelocityVectors(_speed, _angle, _liftOfObject){
     return verticalSpeed;
 }
 
-//-------------------------------------------------------
-//create clouds
-//-------------------------------------------------------
-function createClouds(){
-    cloudGroup = new Group();
-    for()
-}
+
+//not moving to right side of screen
+function moveCloud(_cloudMoved, _wallLeft){
+        _cloudMoved.moveTo(windowWidth, random(0,GROUND_HEIGHT));
+    }
+
 
 
 function draw(){
@@ -101,11 +116,13 @@ function draw(){
         }    
 
 
-
+    //
+    cloudGroup.collides(wallLeft, moveCloud)
+    
     //--------------------------------------------
     //move camera & ground
     //--------------------------------------------
-        camera.moveTo(plane.x + 2/6 * windowWidth, plane.y, 12);
+        camera.moveTo(plane.x + 2/6 * windowWidth, plane.y, 100);
 
     //--------------------------------------------
     //Apply rotation and movement to the plane
