@@ -7,16 +7,16 @@ const GRAVITY = 5;
 const LIFTCOEFFICENT =0.3;
 const DRAG = 6;
 
-//plane source = https://images.fineartamerica.com/images-medium-large-5/2-illustration-of-an-a-7e-corsair-ii-inkworm.jpg
+//plane img source = https://images.fineartamerica.com/images-medium-large-5/2-illustration-of-an-a-7e-corsair-ii-inkworm.jpg
 
 function preload() {
-
-  imgPlane   = loadImage('A7.png');
+    console.log('preload()')
+    imgPlane   = loadImage('A7.png');
 
 }
 
 function setup(){
-
+    console.log('setup()')
     frameRate(10)
 
     cnv = new Canvas(windowWidth, windowHeight);
@@ -37,11 +37,42 @@ function setup(){
 }
 
 
+
 //--------------------------------------------
+//calculate vertical and horizontal speeds based on pitch and throttle - vetical speed add gravity aswell
+//functions take 3 input parameters - speed, angle of flight (pitch /AoA), and lift coeffient,
+//functions return horizontal speed and vertical speed respectivily 
+//--------------------------------------------
+
+function calculateHorizontalVelocityVectors(_speed, _angle, _liftOfObject){
+    let horizontalSpeed = 0;
+    horizontalSpeed = Math.abs( _speed * (Math.cos(_angle) - Math.cos(90 - _angle) * _liftOfObject));
+    return horizontalSpeed;
+}
+    
+function calculateVerticalVelocityVectors(_speed, _angle, _liftOfObject){
+    let verticalSpeed = 0;
+    verticalSpeed = (-1 * _speed * (Math.sin(_angle) + Math.sin(90 - _angle) * _liftOfObject)) + GRAVITY;
+    return verticalSpeed;
+}
+
+//-------------------------------------------------------
+//create clouds
+//-------------------------------------------------------
+function createClouds(){
+    cloudGroup = new Group();
+    for()
+}
+
+
+function draw(){
+    console.log('draw()')
+    background('#0000ff');
+    
+    //--------------------------------------------
     //Take keyboard input
     //--------------------------------------------
-function keyboardInput(){
-        if(kb.pressing ('w')){
+    if(kb.pressing ('w')){
             if(throttle <= 60){
                 throttle = throttle * 1.1;
             }
@@ -67,43 +98,19 @@ function keyboardInput(){
             } else{
                     pitch = pitch + (1 * Math.sqrt(throttle))
             }
-        }
-        return pitch, throttle;
-    }
+        }    
 
 
-//--------------------------------------------
-//calculate vertical and horizontal speeds based on pitch and throttle - vetical speed add gravity aswell
-//--------------------------------------------
-
-function calculateVelocityVectors(_speed, _angle, _liftOfObject){
-    horizontalSpeed = Math.abs( _speed * (Math.cos(_angle) - Math.cos(90 - _angle) * _liftOfObject));
-    verticalSpeed = (-1 * _speed * (Math.sin(_angle) + Math.sin(90 - _angle) * _liftOfObject)) + GRAVITY;
-    return horizontalSpeed, verticalSpeed;
-}
-    
-function draw(){
-    let verticalSpeed = 0;
-    let horizontalSpeed = 0;
-    background('#0000ff');
-
-    keyboardInput()    
-    calculateVelocityVectors(throttle,pitch,LIFTCOEFFICENT)
 
     //--------------------------------------------
     //move camera & ground
     //--------------------------------------------
         camera.moveTo(plane.x + 2/6 * windowWidth, plane.y, 12);
-        //ground.x = (camera.x);
-
 
     //--------------------------------------------
     //Apply rotation and movement to the plane
     //--------------------------------------------
         plane.rotation = pitch;
-        plane.vel.x = horizontalSpeed;
-        plane.vel.y = verticalSpeed;
-        console.log(plane.x)
-        console.log(plane.y)
-
+        plane.vel.x = calculateHorizontalVelocityVectors(throttle,pitch,LIFTCOEFFICENT);
+        plane.vel.y = calculateVerticalVelocityVectors(throttle,pitch,LIFTCOEFFICENT);
 }
