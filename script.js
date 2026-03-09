@@ -4,8 +4,10 @@ let throttle = 0.5;
 let pitch = 0;
 
 const GRAVITY = 5;
-const LIFTCOEFFICENT =0.3;
+const LIFTCOEFFICENT =0.3025;
 const DRAG = 6;
+const FRAMERATE = 10;
+const PITCHSENSITIVITY = 0.5;
 
 
 //plane img source = https://images.fineartamerica.com/images-medium-large-5/2-illustration-of-an-a-7e-corsair-ii-inkworm.jpg
@@ -19,7 +21,7 @@ function preload() {
 
 function setup(){
     console.log('setup()')
-    frameRate(24)
+    frameRate(FRAMERATE)
     angleMode(DEGREES);
     const GROUND_HEIGHT = windowHeight - windowHeight/6;
     createClouds(GROUND_HEIGHT);
@@ -63,13 +65,20 @@ function createClouds(_groundHeight){
 
 function calculateHorizontalVelocityVectors(_speed, _angle, _liftOfObject){
     let horizontalSpeed = 0;
-    horizontalSpeed = (Math.abs( _speed * (Math.cos(_angle) - Math.cos(90 - _angle) * _liftOfObject))) * deltaTime * 1/24;
+    horizontalSpeed = (Math.abs( _speed * (Math.cos(_angle) - Math.cos(90 - _angle) * _liftOfObject)));
     return horizontalSpeed;
 }
     
 function calculateVerticalVelocityVectors(_speed, _angle, _liftOfObject){
     let verticalSpeed = 0;
-    verticalSpeed = ((-1 * _speed * (Math.sin(_angle) + Math.sin(90 - _angle) * _liftOfObject)) + GRAVITY) * deltaTime * 1/24;
+    verticalSpeed = (( -1 * _speed * (Math.sin(_angle) + Math.sin(90 + _angle) * _liftOfObject)) + GRAVITY) * 1/(FRAMERATE);
+    
+    if(verticalSpeed < -35){
+        verticalSpeed = -35;
+    }
+
+    console.log(pitch)
+    console.log(verticalSpeed)
     return verticalSpeed;
 }
 
@@ -80,20 +89,21 @@ function moveCloud(_cloudMoved, _wallLeft){
 
 
 
-function moveCamera(_percentperframe){
+function moveCameraAndGround(_percentperframe){
     camera.x += (plane.x - camera.x) * (_percentperframe/100) + 2/6 * windowWidth;
     camera.y += (plane.y - camera.y) * (_percentperframe/100);
+    ground.x = camera .x; 
 }
 
 function draw(){
-    console.log('draw()')
+    //console.log('draw()')
     background('#0000ff');
     
     //--------------------------------------------
     //Take keyboard input
     //--------------------------------------------
     if(kb.pressing ('w')){
-        if(throttle <= 60){
+        if(throttle <= 120){
             throttle = throttle * 1.1;
         }
     }
@@ -108,7 +118,7 @@ function draw(){
             if(pitch <= -65){
                 pitch = pitch;
             } else{
-                    pitch = pitch - (1 * Math.sqrt(throttle));
+                    pitch = pitch - (1 * Math.sqrt(throttle) * PITCHSENSITIVITY);
             }
         }
 
@@ -116,9 +126,12 @@ function draw(){
             if(pitch >= 85){
                 pitch = pitch;
             } else{
-                    pitch = pitch + (1 * Math.sqrt(throttle))
+                    pitch = pitch + (1 * Math.sqrt(throttle) * PITCHSENSITIVITY)
             }
         }    
+    }else {
+        pitch = 0;
+        plane.rotation = 0;
     }
 
 
@@ -128,7 +141,7 @@ function draw(){
     //--------------------------------------------
     //move camera & ground
     //--------------------------------------------
-    moveCamera(100)
+    moveCameraAndGround(100)
         //camera.moveTo(plane.x + 2/6 * windowWidth, plane.y, 100);
 
     //--------------------------------------------
@@ -137,6 +150,5 @@ function draw(){
         plane.rotation = pitch;
         plane.vel.x = calculateHorizontalVelocityVectors(throttle,pitch,LIFTCOEFFICENT);
         plane.vel.y = calculateVerticalVelocityVectors(throttle,pitch,LIFTCOEFFICENT);
-        console.log(deltaTime)
 
 }
