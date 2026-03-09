@@ -19,6 +19,7 @@ function preload() {
 
 function setup(){
     console.log('setup()')
+    frameRate(24)
     angleMode(DEGREES);
     const GROUND_HEIGHT = windowHeight - windowHeight/6;
     createClouds(GROUND_HEIGHT);
@@ -62,23 +63,27 @@ function createClouds(_groundHeight){
 
 function calculateHorizontalVelocityVectors(_speed, _angle, _liftOfObject){
     let horizontalSpeed = 0;
-    horizontalSpeed = Math.abs( _speed * (Math.cos(_angle) - Math.cos(90 - _angle) * _liftOfObject));
+    horizontalSpeed = (Math.abs( _speed * (Math.cos(_angle) - Math.cos(90 - _angle) * _liftOfObject))) * deltaTime * 1/24;
     return horizontalSpeed;
 }
     
 function calculateVerticalVelocityVectors(_speed, _angle, _liftOfObject){
     let verticalSpeed = 0;
-    verticalSpeed = (-1 * _speed * (Math.sin(_angle) + Math.sin(90 - _angle) * _liftOfObject)) + GRAVITY;
+    verticalSpeed = ((-1 * _speed * (Math.sin(_angle) + Math.sin(90 - _angle) * _liftOfObject)) + GRAVITY) * deltaTime * 1/24;
     return verticalSpeed;
 }
 
-
-//not moving to right side of screen
+//not moving to right side of screen not worring right now
 function moveCloud(_cloudMoved, _wallLeft){
         _cloudMoved.moveTo(windowWidth, random(0,GROUND_HEIGHT));
     }
 
 
+
+function moveCamera(_percentperframe){
+    camera.x += (plane.x - camera.x) * (_percentperframe/100) + 2/6 * windowWidth;
+    camera.y += (plane.y - camera.y) * (_percentperframe/100);
+}
 
 function draw(){
     console.log('draw()')
@@ -88,17 +93,17 @@ function draw(){
     //Take keyboard input
     //--------------------------------------------
     if(kb.pressing ('w')){
-            if(throttle <= 60){
-                throttle = throttle * 1.1;
-            }
+        if(throttle <= 60){
+            throttle = throttle * 1.1;
         }
+    }
 
-        if(kb.pressing ('s')){
-            if(throttle >= 0.1){
-                throttle = throttle * 0.99;
-            }
+    if(kb.pressing ('s')){
+        if(throttle >= 0.1){
+            throttle = throttle * 0.99;
         }
-
+    }
+    if(plane.colliding(ground) == false){
         if(kb.pressing ('a')){
             if(pitch <= -65){
                 pitch = pitch;
@@ -114,6 +119,7 @@ function draw(){
                     pitch = pitch + (1 * Math.sqrt(throttle))
             }
         }    
+    }
 
 
     //
@@ -122,7 +128,8 @@ function draw(){
     //--------------------------------------------
     //move camera & ground
     //--------------------------------------------
-        camera.moveTo(plane.x + 2/6 * windowWidth, plane.y, 100);
+    moveCamera(100)
+        //camera.moveTo(plane.x + 2/6 * windowWidth, plane.y, 100);
 
     //--------------------------------------------
     //Apply rotation and movement to the plane
@@ -130,4 +137,6 @@ function draw(){
         plane.rotation = pitch;
         plane.vel.x = calculateHorizontalVelocityVectors(throttle,pitch,LIFTCOEFFICENT);
         plane.vel.y = calculateVerticalVelocityVectors(throttle,pitch,LIFTCOEFFICENT);
+        console.log(deltaTime)
+
 }
