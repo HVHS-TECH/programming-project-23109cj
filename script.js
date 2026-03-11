@@ -45,6 +45,18 @@ function setup(){
 
 }
 
+//--------------------------------------------------------
+//Launch Missle
+//--------------------------------------------------------
+function launchMissile(){
+    missile = new Sprite();
+    missile.img=()
+    missile.vel.x = calculateHorizontalVelocityVectors(throttle,pitch,LIFTCOEFFICENT)
+    missile.vel.y = calculateVerticalVelocityVectors(throttle,pitch,LIFTCOEFFICENT)
+    missile.point
+}
+
+
 //-------------------------------------------------------
 //create clouds
 //-------------------------------------------------------
