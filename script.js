@@ -6,8 +6,9 @@ let pitch = 0;
 const GRAVITY = 5;
 const LIFTCOEFFICENT =0.3025;
 const DRAG = 6;
-const FRAMERATE = 10;
-const PITCHSENSITIVITY = 0.5;
+const FRAMERATE = 60;
+const PITCHSENSITIVITY = 0.12;
+let GROUND_HEIGHT; //as var so it can be read from all functions - value never cahnged after setup()
 
 
 //plane img source = https://images.fineartamerica.com/images-medium-large-5/2-illustration-of-an-a-7e-corsair-ii-inkworm.jpg
@@ -23,10 +24,10 @@ function setup(){
     console.log('setup()')
     frameRate(FRAMERATE)
     angleMode(DEGREES);
-    const GROUND_HEIGHT = windowHeight - windowHeight/6;
-    createClouds(GROUND_HEIGHT);
+    GROUND_HEIGHT = windowHeight - windowHeight/6;
+    createClouds();
 
-    cnv = new Canvas(windowWidth, windowHeight);
+    cnv = new Canvas(windowWidth -1, windowHeight-1);
 
     plane = new Sprite(windowWidth/6, GROUND_HEIGHT, 20, 20, 'd');
     plane.image = (imgPlane);
@@ -39,7 +40,7 @@ function setup(){
     ground.color = '#00ff00';
     ground.bouncieness = 0;
 
-    wallLeft = new Sprite(0,windowHeight/2,5, windowHeight, 'k')
+    wallLeft = new Sprite(0,windowHeight/2, 5, windowHeight, 'k')
     wallLeft.visible = false;
 
 }
@@ -47,14 +48,12 @@ function setup(){
 //-------------------------------------------------------
 //create clouds
 //-------------------------------------------------------
-function createClouds(_groundHeight){
-    cloudGroup = new Group();
-    for(i=0; i<=2; i++){
-        cloud = new Sprite(windowWidth, random(0,_groundHeight), 10, 10, 'n')
+function createClouds(){
+    console.log('createClouds()')
+        cloud = new Sprite(windowWidth, random(0,GROUND_HEIGHT), 10, 10, 'n')
         cloud.image = (imgCloud);
         cloud.image.scale = 0.5;
-        cloudGroup.add(cloud);
-    }
+    
 }
 
 //--------------------------------------------
@@ -77,26 +76,23 @@ function calculateVerticalVelocityVectors(_speed, _angle, _liftOfObject){
         verticalSpeed = -35;
     }
 
-    console.log(pitch)
-    console.log(verticalSpeed)
     return verticalSpeed;
 }
 
-//not moving to right side of screen not worring right now
-function moveCloud(_cloudMoved, _wallLeft){
-        _cloudMoved.moveTo(windowWidth, random(0,GROUND_HEIGHT));
-    }
 
 
-
+//--------------------------------------------
+//move camera & ground
+//--------------------------------------------
 function moveCameraAndGround(_percentperframe){
-    camera.x += (plane.x - camera.x) * (_percentperframe/100) + 2/6 * windowWidth;
+    camera.x += (plane.x - camera.x) * (_percentperframe/100) //- (2/6 * windowWidth);
     camera.y += (plane.y - camera.y) * (_percentperframe/100);
     ground.x = camera .x; 
 }
 
+
+
 function draw(){
-    //console.log('draw()')
     background('#0000ff');
     
     //--------------------------------------------
@@ -104,13 +100,13 @@ function draw(){
     //--------------------------------------------
     if(kb.pressing ('w')){
         if(throttle <= 120){
-            throttle = throttle * 1.1;
+            throttle = throttle * (1 + 0.1/6);
         }
     }
 
     if(kb.pressing ('s')){
         if(throttle >= 0.1){
-            throttle = throttle * 0.99;
+            throttle = throttle * (1 - 0.1/6);
         }
     }
     if(plane.colliding(ground) == false){
@@ -118,7 +114,7 @@ function draw(){
             if(pitch <= -65){
                 pitch = pitch;
             } else{
-                    pitch = pitch - (1 * Math.sqrt(throttle) * PITCHSENSITIVITY);
+                    pitch = pitch - (1/6 * Math.sqrt(throttle) * PITCHSENSITIVITY);
             }
         }
 
@@ -126,7 +122,7 @@ function draw(){
             if(pitch >= 85){
                 pitch = pitch;
             } else{
-                    pitch = pitch + (1 * Math.sqrt(throttle) * PITCHSENSITIVITY)
+                    pitch = pitch + (1/6 * Math.sqrt(throttle) * PITCHSENSITIVITY)
             }
         }    
     }else {
@@ -136,13 +132,12 @@ function draw(){
 
 
     //
-    cloudGroup.collides(wallLeft, moveCloud)
+    if(cloud.x < camera.x - windowWidth/2){
+        console.log('cloudIf')
+        cloud.x = camera.x + windowWidth/2;
+    }
     
-    //--------------------------------------------
-    //move camera & ground
-    //--------------------------------------------
-    moveCameraAndGround(100)
-        //camera.moveTo(plane.x + 2/6 * windowWidth, plane.y, 100);
+    moveCameraAndGround(20)
 
     //--------------------------------------------
     //Apply rotation and movement to the plane
