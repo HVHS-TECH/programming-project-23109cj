@@ -165,7 +165,7 @@ function draw(){
 //missile movement & removal after time
     if(missileTimer != 0){
         console.log('timer not=0')
-        missile.moveTowards(mouse.x, mouse.y, 0.55)
+        missile.moveTowards(mouse.x, mouse.y, 0.75)
     }
 
     if(missileTimer == 1){
