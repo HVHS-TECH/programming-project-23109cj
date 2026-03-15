@@ -58,8 +58,8 @@ function setup(){
 }
 
 //create enemies every 10 sec
-function createEnemy(_playerY){
-    enemy = new Sprite(/* needs work*/ , random(_playerY - 100, _playerY + 100), 20,20 ,'d')
+function createEnemy(_playerX, _playerY){
+    enemy = new Sprite(_playerX - windowWidth/2 , random(_playerY - 100, _playerY + 100), 20,20 ,'d')
     enemy.image = (imgEnemy);
     enemy.image.scale.y = 0.2;
     enemy.image.scale.x = -0.2;
@@ -177,7 +177,7 @@ function draw(){
 
     //spawn enemy
     if(enemyTimer <= 0){
-        createEnemy(plane.y)
+        createEnemy(plane.x, plane.y)
         enemyGroup.vel.x=calculateHorizontalVelocityVectors(throttle,0,1)
         enemyTimer = 500;
     }
