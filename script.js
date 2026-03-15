@@ -7,10 +7,10 @@ let missileTimer = 0;
 let missile;
 let score = 0;
 let enemyTimer =500;
+let enemyGroup;
 
 const GRAVITY = 5;
 const LIFTCOEFFICENT =0.3025;
-const DRAG = 6;
 const FRAMERATE = 60;
 const PITCHSENSITIVITY = 0.12;
 let GROUND_HEIGHT;      //as var so it can be read from all functions - value never changed after setup() so I have named it as a constant
@@ -23,6 +23,7 @@ function preload() {
     imgPlane   = loadImage('A7.png');
     imgCloud   = loadImage('Cloud.png');
     imgMissile = loadImage('missile.png');
+    imgEnemy = loadImage('F-14.png');
     
 }
 
@@ -43,20 +44,29 @@ function setup(){
     plane.image = (imgPlane);
     plane.image.scale.y = 0.1;
     plane.image.scale.x = -0.1;
-    plane.drag = DRAG; 
     plane.bouncieness = 0;
 
     ground = new Sprite(windowWidth/2, GROUND_HEIGHT/3 *4.35, windowWidth, GROUND_HEIGHT, 'k');
     ground.color = '#00ff00';
     ground.bouncieness = 0;
 
-    wallLeft = new Sprite(0,windowHeight/2, 5, windowHeight, 'k')
-    wallLeft.visible = false;
+    wallTop = new Sprite(windowWidth/2, windowHeight/2-windowHeight, windowWidth, 5, 'k')
+    wallTop.visible = false;
+
+    enemyGroup = new Group()
 
 }
 
 //create enemies every 10 sec
+function createEnemy(_playerY){
+    enemy = new Sprite(/* needs work*/ , random(_playerY - 100, _playerY + 100), 20,20 ,'d')
+    enemy.image = (imgEnemy);
+    enemy.image.scale.y = 0.2;
+    enemy.image.scale.x = -0.2;
+    console.log('create enemy')
 
+    enemyGroup.add(enemy)
+}
 
 
 
@@ -65,6 +75,7 @@ function setup(){
 
 //--------------------------------------------------------
 //Launch Missle
+//creates a new sprite, calc its velocity to be faster than plane by 25%, assigns img
 //--------------------------------------------------------
 function launchMissile(){
     missile = new Sprite(plane.x -20, plane.y - 10, 40,10,'k');
@@ -75,18 +86,18 @@ function launchMissile(){
     missile.scale.y = 0.1;
 }
 
+
 //--------------------------------------------
 //calculate vertical and horizontal speeds based on pitch and throttle - vetical speed add gravity aswell
 //functions take 3 input parameters - speed, angle of flight (pitch /AoA), and lift coeffient,
 //functions return horizontal speed and vertical speed respectivily 
 //--------------------------------------------
-
 function calculateHorizontalVelocityVectors(_speed, _angle, _liftOfObject){
     let horizontalSpeed = 0;
     horizontalSpeed = (Math.abs( _speed * (Math.cos(_angle) - Math.cos(90 - _angle) * _liftOfObject)));
     return horizontalSpeed;
 }
-    
+   
 function calculateVerticalVelocityVectors(_speed, _angle, _liftOfObject){
     let verticalSpeed = 0;
     verticalSpeed = (( -1 * _speed * (Math.sin(_angle) + Math.sin(90 + _angle) * _liftOfObject)) + GRAVITY) * 1/(FRAMERATE);
@@ -101,12 +112,14 @@ function calculateVerticalVelocityVectors(_speed, _angle, _liftOfObject){
 
 
 //--------------------------------------------
-//move camera & ground
+//move camera & ground & the walls(top of frame to ensure player stays inside zone)
+//takes input of percent per frame for the camera to move, higher percent creats less smooth movement
 //--------------------------------------------
-function moveCameraAndGround(_percentperframe){
+function moveCameraAndWallAndGround(_percentperframe){
     camera.x += ((plane.x - camera.x) * (_percentperframe/100)) + (1/14*windowWidth);
     camera.y += (plane.y - camera.y) * (_percentperframe/100);
-    ground.x = camera .x; 
+    ground.x = camera.x; 
+    wallTop.x = camera.x;
     //console.log(camera.x);
     //console.log(plane.x)
 }
@@ -114,6 +127,7 @@ function moveCameraAndGround(_percentperframe){
 
 
 function draw(){
+    enemyTimer -=1;
     background('#0000ff');
     if(missileTimer >= 1){
         missileTimer -= 1;
@@ -161,41 +175,42 @@ function draw(){
         console.log(mouseX,mouseY)
     }
 
-    
-//missile movement & removal after time
-    if(missileTimer != 0){
-        console.log('timer not=0')
-        missile.moveTowards(mouse.x, mouse.y, 0.75)
+    //spawn enemy
+    if(enemyTimer <= 0){
+        createEnemy(plane.y)
+        enemyGroup.vel.x=calculateHorizontalVelocityVectors(throttle,0,1)
+        enemyTimer = 500;
     }
 
+    //missile movement & removal after time
+    if(missileTimer != 0){
+        console.log('timer not=0')
+        missile.x += (mouse.x - missile.x) *0.075;
+        missile.y += (mouse.y - missile.y) *0.075;
+    }
     if(missileTimer == 1){
         missile.remove();
     }
 
-
-
-    //----------------------------------------------
     //move clouds accros screen
-
     if(cloud.x < camera.x - windowWidth/2){
         console.log('cloudIf')
         cloud.x = camera.x + windowWidth/2;
     }
     
 
-    //------------------------
     //cloud velocity 
-    //------------------------
     cloud.vel.x = plane.vel.x/3;
 
 
 
-    moveCameraAndGround(20)
+    moveCameraAndWallAndGround(20)
     //--------------------------------------------
     //Apply rotation and movement to the plane
     //--------------------------------------------
+    enemyGroup.vel.x = calculateHorizontalVelocityVectors(throttle,0,1) + 3;
+
     plane.rotation = pitch;
     plane.vel.x = calculateHorizontalVelocityVectors(throttle,pitch,LIFTCOEFFICENT);
     plane.vel.y = calculateVerticalVelocityVectors(throttle,pitch,LIFTCOEFFICENT);
-
 }
