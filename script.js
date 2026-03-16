@@ -8,12 +8,14 @@ let missile;
 let score = 0;
 let enemyTimer = 500;
 let enemyGroup;
+let particleGroup;
+let particleTimer=0;
 
 const GRAVITY = 5;
 const LIFTCOEFFICENT = 0.3025;
 const FRAMERATE = 60;
 const PITCHSENSITIVITY = 0.12;
-let GROUND_HEIGHT;      //as var so it can be read from all functions - value never changed after setup() so I have named it as a constant
+let groundHeight;      //as var so it can be read from all functions - value never changed after setup() so I have named it as a constant
 
 
 //plane img source = https://upload.wikimedia.org/wikipedia/commons/9/93/A-7_Corsair_II.svg   -- Is creative commons - found by filtering google for creative commons only
@@ -23,10 +25,10 @@ let GROUND_HEIGHT;      //as var so it can be read from all functions - value ne
 
 function preload() {
     console.log('preload()')
-    imgPlane = loadImage('A-7.svg');
-    imgCloud = loadImage('Cloud.png');
-    imgMissile = loadImage('missile.png');
-    imgEnemy = loadImage('F-14.png');
+    imgPlane = loadImage('Images/A-7.svg');
+    imgCloud = loadImage('Images/Cloud.png');
+    imgMissile = loadImage('Images/missile.png');
+    imgEnemy = loadImage('Images/F-14.png');
 
 }
 
@@ -34,22 +36,22 @@ function setup() {
     console.log('setup()')
     frameRate(FRAMERATE)
     angleMode(DEGREES);
-    GROUND_HEIGHT = windowHeight - windowHeight / 6;
+    groundHeight = windowHeight - windowHeight / 6;
 
     cnv = new Canvas(windowWidth, windowHeight);
 
 
-    cloud = new Sprite(windowWidth, random(0, GROUND_HEIGHT), 10, 10, 'n')
+    cloud = new Sprite(windowWidth, random(0, groundHeight), 10, 10, 'n')
     cloud.image = (imgCloud);
     cloud.image.scale = 0.5;
 
-    plane = new Sprite(windowWidth / 6, GROUND_HEIGHT, 20, 20, 'd');
+    plane = new Sprite(windowWidth / 6, groundHeight, 20, 20, 'd');
     plane.image = (imgPlane);
     plane.image.scale.y = 0.1;
     plane.image.scale.x = -0.1;
     plane.bouncieness = 0;
 
-    ground = new Sprite(windowWidth / 2, GROUND_HEIGHT / 3 * 4.35, windowWidth, GROUND_HEIGHT, 'k');
+    ground = new Sprite(windowWidth / 2, groundHeight / 3 * 4.35, windowWidth, groundHeight, 'k');
     ground.color = '#00ff00';
     ground.bouncieness = 0;
 
@@ -57,20 +59,21 @@ function setup() {
     wallTop.visible = false;
 
     enemyGroup = new Group()
+    particleGroup = new Group()
 
 }
 
-//create enemies every 10 sec
+
+
 function createEnemy(_playerX, _playerY) {
     enemy = new Sprite(_playerX - windowWidth / 2, random(_playerY - 100, _playerY + 100), 20, 20, 'd')
     enemy.image = (imgEnemy);
-    enemy.image.scale.y = 0.2;
-    enemy.image.scale.x = -0.2;
+    enemy.image.scale.y = 0.3;
+    enemy.image.scale.x = -0.3;
     console.log('create enemy')
 
     enemyGroup.add(enemy)
 }
-
 
 
 //--------------------------------------------------------
@@ -82,8 +85,8 @@ function launchMissile() {
     missile.vel.x = calculateHorizontalVelocityVectors(throttle, pitch, LIFTCOEFFICENT) * 1.25
     missile.vel.y = calculateVerticalVelocityVectors(throttle, pitch, LIFTCOEFFICENT)
     missile.image = (imgMissile)
-    missile.scale.x = -0.1;
-    missile.scale.y = 0.1;
+    missile.scale.x = -0.3;
+    missile.scale.y = 0.3;
 }
 
 
@@ -124,7 +127,9 @@ function moveCameraAndWallAndGround(_percentperframe) {
     //console.log(plane.x)
 }
 
-
+//--------------------------------------------
+    //Take keyboard input
+    //--------------------------------------------
 function takeKeyboardInput(){
     if (kb.pressing('w')) {
         if (throttle <= 120) {
@@ -167,24 +172,47 @@ function takeKeyboardInput(){
     return pitch,missileTimer,throttle; 
 }
 
+function killEnemy(_enemyHit, _missile){
+    let collisionSpeed = enemyGroup.vel.x;
+    let collisionX = _enemyHit.x;
+    let collisionY = _enemyHit.y;
+    _missile.remove()
+    _enemyHit.remove()
+    for(i=0; i<100; i++){
+        particle = new Sprite(collisionX,collisionY,2,'d')
+        particle.color = 'orange';
+        particle.vel.x = collisionSpeed;
+        particleGroup.add(particle)
+        particleTimer=150;
+    }
+}
+
 
 
 function draw() {
+
+    enemyGroup.collides(missile, killEnemy)
+
     enemyTimer -= 1;
     background('#0000ff');
+
     if (missileTimer >= 1) {
+        //collider not working
+        enemyGroup.collides(missile, killEnemy)
         missileTimer -= 1;
     }
 
-    //--------------------------------------------
-    //Take keyboard input
-    //--------------------------------------------
     
+    if(particleTimer == 1){
+        particleGroup.deleteAll();
+    }
+
+    takeKeyboardInput()
 
     //spawn enemy
     if (enemyTimer <= 0) {
         createEnemy(plane.x, plane.y)
-        enemyGroup.vel.x = calculateHorizontalVelocityVectors(throttle, 0, 1)
+        enemyGroup.vel.x = calculateHorizontalVelocityVectors(throttle, 0, 1) + 10;
         enemyTimer = 500;
     }
 
@@ -198,17 +226,16 @@ function draw() {
         missile.remove();
     }
 
+
+
     //move clouds accros screen
     if (cloud.x < camera.x - windowWidth / 2) {
         console.log('cloudIf')
         cloud.x = camera.x + windowWidth / 2;
     }
 
-
     //cloud velocity 
     cloud.vel.x = plane.vel.x / 3;
-
-
 
     moveCameraAndWallAndGround(20)
     //--------------------------------------------
