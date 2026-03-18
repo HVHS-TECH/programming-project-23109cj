@@ -60,16 +60,23 @@ function setup() {
 
     enemyGroup = new Group()
     particleGroup = new Group()
-
 }
 
 
 
 function createEnemy(_playerX, _playerY) {
-    enemy = new Sprite(_playerX - windowWidth / 2, random(_playerY - 100, _playerY + 100), 20, 20, 'd')
-    enemy.image = (imgEnemy);
-    enemy.image.scale.y = 0.3;
-    enemy.image.scale.x = -0.3;
+    let inSky = false
+    enemy = new Sprite(_playerX - windowWidth / 2, random(_playerY - 100, _playerY + 100), 100, 40, 'k')
+    while(inSky == false){
+        if(enemy.overlaps(ground)){
+            enemy.y += 100;
+        }else{
+            inSky = true;
+        }
+    }
+    //enemy.image = (imgEnemy);
+    //enemy.image.scale.y = 0.3;
+    //enemy.image.scale.x = -0.3;
     console.log('create enemy')
 
     enemyGroup.add(enemy)
@@ -111,7 +118,6 @@ function calculateVerticalVelocityVectors(_speed, _angle, _liftOfObject) {
 
     return verticalSpeed;
 }
-
 
 
 //--------------------------------------------
@@ -179,9 +185,10 @@ function killEnemy(_enemyHit, _missile){
     _missile.remove()
     _enemyHit.remove()
     for(i=0; i<100; i++){
-        particle = new Sprite(collisionX,collisionY,2,'d')
-        particle.color = 'orange';
-        particle.vel.x = collisionSpeed;
+        particle = new Sprite(collisionX,collisionY,5,'d')
+        particle.color = '#FF7700';
+        particle.vel.x = collisionSpeed * random(-100,100)/100;
+        particle.vel.y = random(-50,50);
         particleGroup.add(particle)
         particleTimer=150;
     }
@@ -191,7 +198,6 @@ function killEnemy(_enemyHit, _missile){
 
 function draw() {
 
-    enemyGroup.collides(missile, killEnemy)
 
     enemyTimer -= 1;
     background('#0000ff');
