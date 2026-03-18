@@ -66,7 +66,7 @@ function setup() {
 
 function createEnemy(_playerX, _playerY) {
     let inSky = false
-    enemy = new Sprite(_playerX - windowWidth / 2, random(_playerY - 100, _playerY + 100), 100, 40, 'k')
+    enemy = new Sprite(_playerX - windowWidth / 2, random(_playerY - 100, _playerY + 100), 80, 30, 'k')
     while(inSky == false){
         if(enemy.overlaps(ground)){
             enemy.y += 100;
@@ -74,9 +74,9 @@ function createEnemy(_playerX, _playerY) {
             inSky = true;
         }
     }
-    //enemy.image = (imgEnemy);
-    //enemy.image.scale.y = 0.3;
-    //enemy.image.scale.x = -0.3;
+    enemy.image = (imgEnemy);
+    enemy.image.scale.y = 0.3;
+    enemy.image.scale.x = -0.3;
     console.log('create enemy')
 
     enemyGroup.add(enemy)
