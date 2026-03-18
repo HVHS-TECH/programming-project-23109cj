@@ -38,7 +38,7 @@ function setup() {
     groundHeight = windowHeight - windowHeight / 6;
 
     cnv = new Canvas(windowWidth, windowHeight);
-    
+
     cloud = new Sprite(windowWidth, random(0, groundHeight), 10, 10, 'n')
     cloud.image = (imgCloud);
     cloud.image.scale = 0.5;
@@ -59,7 +59,7 @@ function setup() {
     enemyGroup = new Group()
     particleGroup = new Group()
 
-    
+
 }
 
 
@@ -67,10 +67,10 @@ function setup() {
 function createEnemy(_playerX, _playerY) {
     let inSky = false
     enemy = new Sprite(_playerX - windowWidth / 2, random(_playerY - 100, _playerY + 100), 80, 30, 'd')
-    while(inSky == false){
-        if(enemy.overlaps(ground)){
+    while (inSky == false) {
+        if (enemy.overlaps(ground)) {
             enemy.y += 100;
-        }else{
+        } else {
             inSky = true;
         }
     }
@@ -148,9 +148,9 @@ function moveCameraAndWallAndGround(_percentperframe) {
 }
 
 //--------------------------------------------
-    //Take keyboard input
-    //--------------------------------------------
-function takeKeyboardInput(){
+//Take keyboard input
+//--------------------------------------------
+function takeKeyboardInput() {
     if (kb.pressing('w')) {
         if (throttle <= 120) {
             throttle = throttle * (1 + 0.1 / 6);
@@ -189,22 +189,22 @@ function takeKeyboardInput(){
         console.log(mouseX, mouseY)
     }
 
-    return pitch,missileTimer,throttle; 
+    return pitch, missileTimer, throttle;
 }
 
-function killEnemy(_enemyHit, _missile){
+function killEnemy(_enemyHit, _missile) {
     let collisionSpeed = enemyGroup.vel.x;
     let collisionX = _enemyHit.x;
     let collisionY = _enemyHit.y;
     _missile.remove()
     _enemyHit.remove()
     score += 1;
-    for(i=0; i<100; i++){
-        particle = new Sprite(collisionX,collisionY,5,'d')
+    for (i = 0; i < 100; i++) {
+        particle = new Sprite(collisionX, collisionY, 5, 'd')
         particle.color = '#FF7700';
         particle.strokeWeight = 0;
-        particle.vel.x = collisionSpeed * random(-100,100)/100;
-        particle.vel.y = random(-50,50);
+        particle.vel.x = collisionSpeed * random(-100, 100) / 100;
+        particle.vel.y = random(-50, 50);
         particle.life = 150;
         particleGroup.add(particle)
     }
@@ -213,19 +213,13 @@ function killEnemy(_enemyHit, _missile){
 
 
 function draw() {
-
-
     enemyTimer -= 1;
     background('#0000ff');
 
     if (missileTimer >= 1) {
-        //collider not working
         enemyGroup.collides(missile, killEnemy)
         missileTimer -= 1;
     }
-
-    
-    
 
     takeKeyboardInput()
 
@@ -246,8 +240,6 @@ function draw() {
         missile.remove();
     }
 
-
-
     //move clouds accros screen
     if (cloud.x < camera.x - windowWidth / 2) {
         console.log('cloudIf')
@@ -267,5 +259,5 @@ function draw() {
     plane.vel.x = calculateHorizontalVelocityVectors(throttle, pitch, LIFTCOEFFICENT);
     plane.vel.y = calculateVerticalVelocityVectors(throttle, pitch, LIFTCOEFFICENT);
 
-    text("Score: "+ score, 50, 100);
+    text("Score: " + score, 50, 100);
 }
