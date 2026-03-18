@@ -97,6 +97,20 @@ function launchMissile() {
 }
 
 
+
+
+
+
+
+
+
+//try converting to rad for calc funcs
+
+
+
+
+
+
 //--------------------------------------------
 //calculate vertical and horizontal speeds based on pitch and throttle - vetical speed add gravity aswell
 //functions take 3 input parameters - speed, angle of flight (pitch /AoA), and lift coeffient,
