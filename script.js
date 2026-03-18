@@ -9,7 +9,6 @@ let score = 0;
 let enemyTimer = 500;
 let enemyGroup;
 let particleGroup;
-let particleTimer=0;
 
 const GRAVITY = 5;
 const LIFTCOEFFICENT = 0.3025;
@@ -39,8 +38,7 @@ function setup() {
     groundHeight = windowHeight - windowHeight / 6;
 
     cnv = new Canvas(windowWidth, windowHeight);
-
-
+    
     cloud = new Sprite(windowWidth, random(0, groundHeight), 10, 10, 'n')
     cloud.image = (imgCloud);
     cloud.image.scale = 0.5;
@@ -60,13 +58,15 @@ function setup() {
 
     enemyGroup = new Group()
     particleGroup = new Group()
+
+    
 }
 
 
 
 function createEnemy(_playerX, _playerY) {
     let inSky = false
-    enemy = new Sprite(_playerX - windowWidth / 2, random(_playerY - 100, _playerY + 100), 80, 30, 'k')
+    enemy = new Sprite(_playerX - windowWidth / 2, random(_playerY - 100, _playerY + 100), 80, 30, 'd')
     while(inSky == false){
         if(enemy.overlaps(ground)){
             enemy.y += 100;
@@ -88,7 +88,7 @@ function createEnemy(_playerX, _playerY) {
 //creates a new sprite, calc its velocity to be faster than plane by 25%, assigns img
 //--------------------------------------------------------
 function launchMissile() {
-    missile = new Sprite(plane.x - 20, plane.y - 10, 40, 10, 'k');
+    missile = new Sprite(plane.x - 20, plane.y - 10, 40, 20, 'k');
     missile.vel.x = calculateHorizontalVelocityVectors(throttle, pitch, LIFTCOEFFICENT) * 1.25
     missile.vel.y = calculateVerticalVelocityVectors(throttle, pitch, LIFTCOEFFICENT)
     missile.image = (imgMissile)
@@ -184,13 +184,15 @@ function killEnemy(_enemyHit, _missile){
     let collisionY = _enemyHit.y;
     _missile.remove()
     _enemyHit.remove()
+    score += 1;
     for(i=0; i<100; i++){
         particle = new Sprite(collisionX,collisionY,5,'d')
         particle.color = '#FF7700';
+        particle.strokeWeight = 0;
         particle.vel.x = collisionSpeed * random(-100,100)/100;
         particle.vel.y = random(-50,50);
+        particle.life = 150;
         particleGroup.add(particle)
-        particleTimer=150;
     }
 }
 
@@ -209,9 +211,7 @@ function draw() {
     }
 
     
-    if(particleTimer == 1){
-        particleGroup.deleteAll();
-    }
+    
 
     takeKeyboardInput()
 
@@ -252,4 +252,6 @@ function draw() {
     plane.rotation = pitch;
     plane.vel.x = calculateHorizontalVelocityVectors(throttle, pitch, LIFTCOEFFICENT);
     plane.vel.y = calculateVerticalVelocityVectors(throttle, pitch, LIFTCOEFFICENT);
+
+    text("Score: "+ score, 50, 100);
 }
