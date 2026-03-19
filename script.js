@@ -117,14 +117,16 @@ function launchMissile() {
 //functions return horizontal speed and vertical speed respectivily 
 //--------------------------------------------
 function calculateHorizontalVelocityVectors(_speed, _angle, _liftOfObject) {
+    _angle = _angle * (Math.PI/180)
     let horizontalSpeed = 0;
     horizontalSpeed = (Math.abs(_speed * (Math.cos(_angle) - Math.cos(90 - _angle) * _liftOfObject)));
     return horizontalSpeed;
 }
 
 function calculateVerticalVelocityVectors(_speed, _angle, _liftOfObject) {
+    _angle = _angle * (Math.PI/180)
     let verticalSpeed = 0;
-    verticalSpeed = ((-1 * _speed * (Math.sin(_angle) + Math.sin(90 + _angle) * _liftOfObject)) + GRAVITY) * 1 / (FRAMERATE);
+    verticalSpeed = ((-1 * Math.abs(_speed * (Math.sin(_angle) + Math.sin(90 + _angle) * _liftOfObject)) + GRAVITY) * 1 / (FRAMERATE));
 
     if (verticalSpeed < -35) {
         verticalSpeed = -35;
@@ -247,7 +249,7 @@ function draw() {
     }
 
     //cloud velocity 
-    cloud.vel.x = plane.vel.x / 3;
+    cloud.vel.x = plane.vel.x / 31.5;
 
     moveCameraAndWallAndGround(20)
     //--------------------------------------------
