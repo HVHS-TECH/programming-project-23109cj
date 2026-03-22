@@ -14,7 +14,9 @@ const GRAVITY = 5;
 const LIFTCOEFFICENT = 0.3025;
 const FRAMERATE = 60;
 const PITCHSENSITIVITY = 0.12;
-let groundHeight;      //as var so it can be read from all functions - value never changed after setup() so I have named it as a constant
+let groundHeight;      //as var so it can be read from all functions - value never changed after setup()
+const SCREENWIDTH = 1000;
+const SCREENHEIGHT = 1000;
 
 
 //plane img source = https://upload.wikimedia.org/wikipedia/commons/9/93/A-7_Corsair_II.svg   -- Is creative commons - found by filtering google for creative commons only
@@ -35,25 +37,25 @@ function setup() {
     console.log('setup()')
     frameRate(FRAMERATE)
     angleMode(DEGREES);
-    groundHeight = windowHeight - windowHeight / 6;
+    groundHeight = SCREENHEIGHT - SCREENHEIGHT / 6;
 
-    cnv = new Canvas(windowWidth, windowHeight);
+    cnv = new Canvas(SCREENWIDTH, SCREENHEIGHT);
 
-    cloud = new Sprite(windowWidth, random(0, groundHeight), 10, 10, 'n')
+    cloud = new Sprite(SCREENWIDTH, random(0, groundHeight), 10, 10, 'n')
     cloud.image = (imgCloud);
     cloud.image.scale = 0.5;
 
-    plane = new Sprite(windowWidth / 6, groundHeight, 20, 20, 'd');
+    plane = new Sprite(SCREENWIDTH / 6, groundHeight, 20, 20, 'd');
     plane.image = (imgPlane);
     plane.image.scale.y = 0.1;
     plane.image.scale.x = -0.1;
     plane.bouncieness = 0;
 
-    ground = new Sprite(windowWidth / 2, groundHeight / 3 * 4.35, windowWidth, groundHeight, 'k');
+    ground = new Sprite(SCREENWIDTH / 2, groundHeight / 3 * 4.35, SCREENWIDTH, groundHeight, 'k');
     ground.color = '#00ff00';
     ground.bouncieness = 0;
 
-    wallTop = new Sprite(windowWidth / 2, windowHeight / 2 - windowHeight, windowWidth, 5, 'k')
+    wallTop = new Sprite(SCREENWIDTH / 2, SCREENHEIGHT / 2 - SCREENHEIGHT, SCREENWIDTH, 5, 'k')
     wallTop.visible = false;
 
     enemyGroup = new Group()
@@ -66,7 +68,7 @@ function setup() {
 
 function createEnemy(_playerX, _playerY) {
     let inSky = false
-    enemy = new Sprite(_playerX - windowWidth / 2, random(_playerY - 100, _playerY + 100), 80, 30, 'd')
+    enemy = new Sprite(_playerX - SCREENWIDTH / 2, random(_playerY - 100, _playerY + 100), 80, 30, 'd')
     while (inSky == false) {
         if (enemy.overlaps(ground)) {
             enemy.y += 100;
@@ -98,23 +100,14 @@ function launchMissile() {
 
 
 
-
-
-
-
-
-
-//try converting to rad for calc funcs
-
-
-
-
-
-
 //--------------------------------------------
-//calculate vertical and horizontal speeds based on pitch and throttle - vetical speed add gravity aswell
+//calculate vertical and horizontal speeds based on pitch and throttle - vetical speed and gravity aswell
 //functions take 3 input parameters - speed, angle of flight (pitch /AoA), and lift coeffient,
-//functions return horizontal speed and vertical speed respectivily 
+//_speed is a numerical value, greater than 0, determines the final speed
+//_angle is a numerical value, between -90 and 90 - determines the angle at which the plane flies and changes the horizontal & verticle velocities inversely
+//_liftOfObject is a numerical value, between 0 & 1 - determines how much lift is produced - is a multiplier on the values calculated by _speed & _angle
+//Horizontal velocity starts full when _angle = 0, with vertical being minimal when _angle = 0, gradually changes inversely as _angle changes
+//functions return horizontal and vertical velocity respectivily 
 //--------------------------------------------
 function calculateHorizontalVelocityVectors(_speed, _angle, _liftOfObject) {
     _angle = _angle * (Math.PI/180)
@@ -139,14 +132,13 @@ function calculateVerticalVelocityVectors(_speed, _angle, _liftOfObject) {
 //--------------------------------------------
 //move camera & ground & the walls(top of frame to ensure player stays inside zone)
 //takes input of percent per frame for the camera to move, higher percent creats less smooth movement
+//_percentPer
 //--------------------------------------------
-function moveCameraAndWallAndGround(_percentperframe) {
-    camera.x += ((plane.x - camera.x) * (_percentperframe / 100)) + (1 / 14 * windowWidth);
-    camera.y += (plane.y - camera.y) * (_percentperframe / 100);
+function moveCameraAndWallAndGround(_percentPerFrame) {
+    camera.x += ((plane.x - camera.x) * (_percentPerFrame / 100)) + (1 / 14 * SCREENWIDTH);
+    camera.y += (plane.y - camera.y) * (_percentPerFrame / 100);
     ground.x = camera.x;
     wallTop.x = camera.x;
-    //console.log(camera.x);
-    //console.log(plane.x)
 }
 
 //--------------------------------------------
@@ -243,9 +235,9 @@ function draw() {
     }
 
     //move clouds accros screen
-    if (cloud.x < camera.x - windowWidth / 2) {
+    if (cloud.x < camera.x - SCREENWIDTH / 2) {
         console.log('cloudIf')
-        cloud.x = camera.x + windowWidth / 2;
+        cloud.x = camera.x + SCREENWIDTH / 2;
     }
 
     //cloud velocity 
