@@ -9,14 +9,17 @@ let score = 0;
 let enemyTimer = 500;
 let enemyGroup;
 let particleGroup;
+let enemyMissile;
+let enemyMissileExists = false;
+let gameRunning = true;
 
-const GRAVITY = 5;
+const GRAVITY = 0.15;
 const LIFTCOEFFICENT = 0.3025;
 const FRAMERATE = 60;
-const PITCHSENSITIVITY = 0.12;
+const PITCHSENSITIVITY = 0.22;
 let groundHeight;      //as var so it can be read from all functions - value never changed after setup()
-const SCREENWIDTH = 1000;
-const SCREENHEIGHT = 1000;
+const SCREENWIDTH = 1400;
+const SCREENHEIGHT = 600;
 
 
 //plane img source = https://upload.wikimedia.org/wikipedia/commons/9/93/A-7_Corsair_II.svg   -- Is creative commons - found by filtering google for creative commons only
@@ -65,13 +68,13 @@ function setup() {
 }
 
 
-
 function createEnemy(_playerX, _playerY) {
+    console.log('createEnemy()')
     let inSky = false
     enemy = new Sprite(_playerX - SCREENWIDTH / 2, random(_playerY - 100, _playerY + 100), 80, 30, 'd')
     while (inSky == false) {
         if (enemy.overlaps(ground)) {
-            enemy.y += 100;
+            enemy.y -= 100;
         } else {
             inSky = true;
         }
@@ -79,7 +82,10 @@ function createEnemy(_playerX, _playerY) {
     enemy.image = (imgEnemy);
     enemy.image.scale.y = 0.3;
     enemy.image.scale.x = -0.3;
-    console.log('create enemy')
+    
+    if (Math.round(Math.random()) == 0) {
+        attackPlayer(enemy.x, enemy.y)
+    }
 
     enemyGroup.add(enemy)
 }
@@ -89,16 +95,16 @@ function createEnemy(_playerX, _playerY) {
 //Launch Missle
 //creates a new sprite, calc its velocity to be faster than plane by 25%, assigns img
 //--------------------------------------------------------
-function launchMissile() {
-    missile = new Sprite(plane.x - 20, plane.y - 10, 40, 20, 'k');
+function launchMissile(_Xpos, _Ypos) {
+    console.log('launchMissile()')
+    missile = new Sprite(_Xpos - 20, _Ypos - 10, 40, 20, 'k');
     missile.vel.x = calculateHorizontalVelocityVectors(throttle, pitch, LIFTCOEFFICENT) * 1.25
     missile.vel.y = calculateVerticalVelocityVectors(throttle, pitch, LIFTCOEFFICENT)
     missile.image = (imgMissile)
     missile.scale.x = -0.3;
     missile.scale.y = 0.3;
+    missile.life = 300;
 }
-
-
 
 //--------------------------------------------
 //calculate vertical and horizontal speeds based on pitch and throttle - vetical speed and gravity aswell
@@ -110,16 +116,16 @@ function launchMissile() {
 //functions return horizontal and vertical velocity respectivily 
 //--------------------------------------------
 function calculateHorizontalVelocityVectors(_speed, _angle, _liftOfObject) {
-    _angle = _angle * (Math.PI/180)
+    _angle = _angle * (Math.PI / 180)
     let horizontalSpeed = 0;
     horizontalSpeed = (Math.abs(_speed * (Math.cos(_angle) - Math.cos(90 - _angle) * _liftOfObject)));
     return horizontalSpeed;
 }
 
 function calculateVerticalVelocityVectors(_speed, _angle, _liftOfObject) {
-    _angle = _angle * (Math.PI/180)
+    _angle = _angle * (Math.PI / 180)
     let verticalSpeed = 0;
-    verticalSpeed = ((-1 * Math.abs(_speed * (Math.sin(_angle) + Math.sin(90 + _angle) * _liftOfObject)) + GRAVITY) * 1 / (FRAMERATE));
+    verticalSpeed = ((-1 * Math.abs(_speed * (Math.sin(_angle) + Math.sin(90 + _angle) * _liftOfObject))) * 1 / (FRAMERATE)) + GRAVITY;
 
     if (verticalSpeed < -35) {
         verticalSpeed = -35;
@@ -179,7 +185,7 @@ function takeKeyboardInput() {
 
     if (kb.presses('space') && missileTimer == 0) {
         missileTimer = 300;
-        launchMissile()
+        launchMissile(plane.x, plane.y, false)
         console.log(mouseX, mouseY)
     }
 
@@ -187,6 +193,7 @@ function takeKeyboardInput() {
 }
 
 function killEnemy(_enemyHit, _missile) {
+    console.log("killEnemy()")
     let collisionSpeed = enemyGroup.vel.x;
     let collisionX = _enemyHit.x;
     let collisionY = _enemyHit.y;
@@ -204,9 +211,22 @@ function killEnemy(_enemyHit, _missile) {
     }
 }
 
+function attackPlayer(_launchX, _launchY) {
+    console.log('attackPlayer()');
+    enemyMissile = new Sprite(_launchX, _launchY, 40, 20, 'k');
+    enemyMissile.vel.x = calculateHorizontalVelocityVectors(throttle, 0 ,1)
+    enemyMissileExists = true;
+    enemyMissile.image = (imgMissile)
+    enemyMissile.scale.x = -0.3;
+    enemyMissile.scale.y = 0.3;
+    enemyMissile.life = 500;
+}
+
+
 
 
 function draw() {
+if(gameRunning){
     enemyTimer -= 1;
     background('#0000ff');
 
@@ -217,10 +237,27 @@ function draw() {
 
     takeKeyboardInput()
 
+
+    //enemies attacking player
+    
+    if (enemyMissileExists) {
+        if (enemyMissile.removed) {
+            enemyMissileExists = false;
+        } else{
+            enemyMissile.x += (plane.x - enemyMissile.x) * 0.05;
+            enemyMissile.y += (plane.y - enemyMissile.y) * 0.05;
+            if (enemyMissile.collides(plane)) {
+                alert("You died - your score was: " + score)
+                gameRunning = false;
+            }
+        }
+    }
+
+
+
     //spawn enemy
     if (enemyTimer <= 0) {
         createEnemy(plane.x, plane.y)
-        enemyGroup.vel.x = calculateHorizontalVelocityVectors(throttle, 0, 1) + 10;
         enemyTimer = 500;
     }
 
@@ -230,13 +267,10 @@ function draw() {
         missile.x += (mouse.x - missile.x) * 0.075;
         missile.y += (mouse.y - missile.y) * 0.075;
     }
-    if (missileTimer == 1) {
-        missile.remove();
-    }
+
 
     //move clouds accros screen
     if (cloud.x < camera.x - SCREENWIDTH / 2) {
-        console.log('cloudIf')
         cloud.x = camera.x + SCREENWIDTH / 2;
     }
 
@@ -247,11 +281,14 @@ function draw() {
     //--------------------------------------------
     //Apply rotation and movement to the plane
     //--------------------------------------------
-    enemyGroup.vel.x = calculateHorizontalVelocityVectors(throttle, 0, 1) + 3;
+
+
+    enemyGroup.vel.x = plane.vel.x + 10;
 
     plane.rotation = pitch;
     plane.vel.x = calculateHorizontalVelocityVectors(throttle, pitch, LIFTCOEFFICENT);
     plane.vel.y = calculateVerticalVelocityVectors(throttle, pitch, LIFTCOEFFICENT);
 
     text("Score: " + score, 50, 100);
+}
 }
