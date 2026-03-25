@@ -12,14 +12,16 @@ let particleGroup;
 let enemyMissile;
 let enemyMissileExists = false;
 let gameRunning = true;
+let chaffRemaining = 150;
+let chaffGroup;
 
 const GRAVITY = 0.15;
 const LIFTCOEFFICENT = 0.3025;
 const FRAMERATE = 60;
 const PITCHSENSITIVITY = 0.22;
-let groundHeight;      //as var so it can be read from all functions - value never changed after setup()
-const SCREENWIDTH = 1400;
-const SCREENHEIGHT = 600;
+let groundHeight;       //as var so it can be read from all functions - value never changed after setup()
+let screenWidth;        //as var so it can be read from all functions - value never changed after setup()
+let screenHeight;       //as var so it can be read from all functions - value never changed after setup()
 
 
 //plane img source = https://upload.wikimedia.org/wikipedia/commons/9/93/A-7_Corsair_II.svg   -- Is creative commons - found by filtering google for creative commons only
@@ -39,39 +41,40 @@ function preload() {
 function setup() {
     console.log('setup()')
     frameRate(FRAMERATE)
-    angleMode(DEGREES);
-    groundHeight = SCREENHEIGHT - SCREENHEIGHT / 6;
+    //angleMode(DEGREES);
+    screenHeight = windowHeight;
+    screenWidth = windowWidth
+    groundHeight = screenHeight - screenHeight / 6;
 
-    cnv = new Canvas(SCREENWIDTH, SCREENHEIGHT);
+    cnv = new Canvas(screenWidth, screenHeight);
 
-    cloud = new Sprite(SCREENWIDTH, random(0, groundHeight), 10, 10, 'n')
+    cloud = new Sprite(screenWidth, random(0, groundHeight), 10, 10, 'n')
     cloud.image = (imgCloud);
     cloud.image.scale = 0.5;
 
-    plane = new Sprite(SCREENWIDTH / 6, groundHeight, 20, 20, 'd');
+    plane = new Sprite(screenWidth / 6, groundHeight, 20, 20, 'd');
     plane.image = (imgPlane);
     plane.image.scale.y = 0.1;
     plane.image.scale.x = -0.1;
     plane.bouncieness = 0;
 
-    ground = new Sprite(SCREENWIDTH / 2, groundHeight / 3 * 4.35, SCREENWIDTH, groundHeight, 'k');
+    ground = new Sprite(screenWidth / 2, groundHeight / 3 * 4.35, screenWidth, groundHeight, 'k');
     ground.color = '#00ff00';
     ground.bouncieness = 0;
 
-    wallTop = new Sprite(SCREENWIDTH / 2, SCREENHEIGHT / 2 - SCREENHEIGHT, SCREENWIDTH, 5, 'k')
+    wallTop = new Sprite(screenWidth / 2, screenHeight / 2 - screenHeight, screenWidth, 5, 'k')
     wallTop.visible = false;
 
     enemyGroup = new Group()
     particleGroup = new Group()
-
-
+    chaffGroup = new Group()
 }
 
 
 function createEnemy(_playerX, _playerY) {
     console.log('createEnemy()')
     let inSky = false
-    enemy = new Sprite(_playerX - SCREENWIDTH / 2, random(_playerY - 100, _playerY + 100), 80, 30, 'd')
+    enemy = new Sprite(_playerX - screenWidth / 2, random(_playerY - 100, _playerY + 100), 80, 30, 'd')
     while (inSky == false) {
         if (enemy.overlaps(ground)) {
             enemy.y -= 100;
@@ -82,8 +85,8 @@ function createEnemy(_playerX, _playerY) {
     enemy.image = (imgEnemy);
     enemy.image.scale.y = 0.3;
     enemy.image.scale.x = -0.3;
-    
-    if (Math.round(Math.random()) == 0) {
+
+    if (Math.round(Math.random(5) == 0)) {
         attackPlayer(enemy.x, enemy.y)
     }
 
@@ -141,7 +144,7 @@ function calculateVerticalVelocityVectors(_speed, _angle, _liftOfObject) {
 //_percentPer
 //--------------------------------------------
 function moveCameraAndWallAndGround(_percentPerFrame) {
-    camera.x += ((plane.x - camera.x) * (_percentPerFrame / 100)) + (1 / 14 * SCREENWIDTH);
+    camera.x += ((plane.x - camera.x) * (_percentPerFrame / 100)) + (1 / 14 * screenWidth);
     camera.y += (plane.y - camera.y) * (_percentPerFrame / 100);
     ground.x = camera.x;
     wallTop.x = camera.x;
@@ -183,10 +186,21 @@ function takeKeyboardInput() {
         pitch = 0;
     }
 
-    if (kb.presses('space') && missileTimer == 0) {
+    if (kb.presses('shift') && missileTimer == 0) {
         missileTimer = 300;
-        launchMissile(plane.x, plane.y, false)
+        launchMissile(plane.x, plane.y)
         console.log(mouseX, mouseY)
+    }
+
+    if (kb.presses('space') && chaffRemaining > 9) {
+        chaffRemaining -= 10;
+        for (i = 0; i < 10; i++) {
+            chaff = new Sprite(plane.x - 30, plane.y + random(-50, 50), 10, 'k');
+            chaff.vel.x = calculateHorizontalVelocityVectors(throttle, 0, 1) * 0.5;
+            chaff.color = "#ff7600"
+            chaff.life = 240;
+            chaffGroup.add(chaff)
+        }
     }
 
     return pitch, missileTimer, throttle;
@@ -211,84 +225,87 @@ function killEnemy(_enemyHit, _missile) {
     }
 }
 
+
+//------------------------------------------------------------
+//function for the enemies to attack the player by launching a missile
+//_launchX is a numerical value - sets where the missile to attack the player spawns
 function attackPlayer(_launchX, _launchY) {
     console.log('attackPlayer()');
     enemyMissile = new Sprite(_launchX, _launchY, 40, 20, 'k');
-    enemyMissile.vel.x = calculateHorizontalVelocityVectors(throttle, 0 ,1)
+    enemyMissile.vel.x = calculateHorizontalVelocityVectors(throttle, 0, 1)
     enemyMissileExists = true;
     enemyMissile.image = (imgMissile)
     enemyMissile.scale.x = -0.3;
     enemyMissile.scale.y = 0.3;
-    enemyMissile.life = 500;
+    enemyMissile.life = 300;
 }
 
 
 
 
 function draw() {
-if(gameRunning){
-    enemyTimer -= 1;
-    background('#0000ff');
+    if (gameRunning) {
+        enemyTimer -= 1;
+        background('#0000ff');
+        takeKeyboardInput()
 
-    if (missileTimer >= 1) {
-        enemyGroup.collides(missile, killEnemy)
-        missileTimer -= 1;
-    }
+        //missile collisions
+        if (missileTimer >= 1) {
+            enemyGroup.collides(missile, killEnemy)
+            missileTimer -= 1;
+        }
 
-    takeKeyboardInput()
-
-
-    //enemies attacking player
-    
-    if (enemyMissileExists) {
-        if (enemyMissile.removed) {
-            enemyMissileExists = false;
-        } else{
-            enemyMissile.x += (plane.x - enemyMissile.x) * 0.05;
-            enemyMissile.y += (plane.y - enemyMissile.y) * 0.05;
-            if (enemyMissile.collides(plane)) {
-                alert("You died - your score was: " + score)
-                gameRunning = false;
+        //enemies attacking player
+        if (enemyMissileExists) {
+            if (enemyMissile.removed) {
+                enemyMissileExists = false;
+            } else {
+                enemyMissile.x += (plane.x - enemyMissile.x) * 0.05;
+                enemyMissile.y += (plane.y - enemyMissile.y) * 0.05;
+                if (enemyMissile.collides(plane)) {
+                    alert("You died - your score was: " + score)
+                    gameRunning = false;
+                }
             }
         }
+
+        //chaff collisions
+        if (enemyMissileExists && chaffGroup.collides(enemyMissile)) {
+            enemyMissile.remove()
+            enemyMissileExists = false;
+        }
+
+        //spawn enemy
+        if (enemyTimer <= 0) {
+            createEnemy(plane.x, plane.y)
+            enemyTimer = 500;
+        }
+
+        //missile movement & removal after time
+        if (missileTimer != 0) {
+            missile.x += (mouse.x - missile.x) * 0.075;
+            missile.y += (mouse.y - missile.y) * 0.075;
+        }
+
+        //move clouds accros screen
+        if (cloud.x < camera.x - screenWidth / 2) {
+            cloud.x = camera.x + screenWidth / 2;
+        }
+
+        //cloud velocity 
+        cloud.vel.x = plane.vel.x / 31.5;
+
+        //move enemies so they are moving slightly faster than the plane
+        enemyGroup.vel.x = plane.vel.x + 10;
+
+        //Apply rotation and movement to the plane
+        plane.rotation = pitch;
+        plane.vel.x = calculateHorizontalVelocityVectors(throttle, pitch, LIFTCOEFFICENT);
+        plane.vel.y = calculateVerticalVelocityVectors(throttle, pitch, LIFTCOEFFICENT);
+
+        moveCameraAndWallAndGround(20)
+
+        //updates score counter
+        text("Score: " + score, 50, 100);
     }
-
-
-
-    //spawn enemy
-    if (enemyTimer <= 0) {
-        createEnemy(plane.x, plane.y)
-        enemyTimer = 500;
-    }
-
-    //missile movement & removal after time
-    if (missileTimer != 0) {
-        console.log('timer not=0')
-        missile.x += (mouse.x - missile.x) * 0.075;
-        missile.y += (mouse.y - missile.y) * 0.075;
-    }
-
-
-    //move clouds accros screen
-    if (cloud.x < camera.x - SCREENWIDTH / 2) {
-        cloud.x = camera.x + SCREENWIDTH / 2;
-    }
-
-    //cloud velocity 
-    cloud.vel.x = plane.vel.x / 31.5;
-
-    moveCameraAndWallAndGround(20)
-    //--------------------------------------------
-    //Apply rotation and movement to the plane
-    //--------------------------------------------
-
-
-    enemyGroup.vel.x = plane.vel.x + 10;
-
-    plane.rotation = pitch;
-    plane.vel.x = calculateHorizontalVelocityVectors(throttle, pitch, LIFTCOEFFICENT);
-    plane.vel.y = calculateVerticalVelocityVectors(throttle, pitch, LIFTCOEFFICENT);
-
-    text("Score: " + score, 50, 100);
-}
 }
