@@ -110,13 +110,13 @@ function launchMissile(_Xpos, _Ypos) {
 }
 
 //--------------------------------------------
-//calculate vertical and horizontal speeds based on pitch and throttle - vetical speed and gravity aswell
-//functions take 3 input parameters - speed, angle of flight (pitch /AoA), and lift coeffient,
-//_speed is a numerical value, greater than 0, determines the final speed
-//_angle is a numerical value, between -90 and 90 - determines the angle at which the plane flies and changes the horizontal & verticle velocities inversely
-//_liftOfObject is a numerical value, between 0 & 1 - determines how much lift is produced - is a multiplier on the values calculated by _speed & _angle
-//Horizontal velocity starts full when _angle = 0, with vertical being minimal when _angle = 0, gradually changes inversely as _angle changes
-//functions return horizontal and vertical velocity respectivily 
+//calculateHorizontalVelocityVectors(_speed, _angle, _liftOfObject)
+//Calculates the horizontal velocity of a sprite based of the input speed, angle and lift coefficent
+//Called:   In the draw loop (Every frame)
+//Input:    _speed - Numerical value  greater than 0 - The current net speed of the sprite
+//          _angle - Numerical value between -180 & 180 - the current angle of flight (Angle between direction of movement and horizontal) of the sprite 
+//          _liftOfObject - numerical value - usualy between -1 & 1 - the greater the magnitude, the more prononced the movement
+//Return:   horizontalSpeed - numerical value - the result of the calculations 
 //--------------------------------------------
 function calculateHorizontalVelocityVectors(_speed, _angle, _liftOfObject) {
     _angle = _angle * (Math.PI / 180)
@@ -125,6 +125,16 @@ function calculateHorizontalVelocityVectors(_speed, _angle, _liftOfObject) {
     return horizontalSpeed;
 }
 
+//--------------------------------------------
+//calculateVerticalVelocityVectors(_speed, _angle, _liftOfObject)
+//Calculates the vertical velocity of a sprite based of the input speed, angle and lift coefficent
+//Affected by FRAMERATE & GRAVITY constants
+//Called:   In the draw loop (Every frame)
+//Input:    _speed - Numerical value  greater than 0 - The current net speed of the sprite
+//          _angle - Numerical value between -180 & 180 - the current angle of flight (Angle between direction of movement and horizontal) of the sprite 
+//          _liftOfObject - numerical value - usualy between -1 & 1 - the greater the magnitude, the more prononced the movement
+//Return:   verticalSpeed - numerical value >= -35 - the result of the calculations 
+//--------------------------------------------
 function calculateVerticalVelocityVectors(_speed, _angle, _liftOfObject) {
     _angle = _angle * (Math.PI / 180)
     let verticalSpeed = 0;
@@ -137,11 +147,14 @@ function calculateVerticalVelocityVectors(_speed, _angle, _liftOfObject) {
     return verticalSpeed;
 }
 
-
 //--------------------------------------------
-//move camera & ground & the walls(top of frame to ensure player stays inside zone)
-//takes input of percent per frame for the camera to move, higher percent creats less smooth movement
-//_percentPer
+//moveCameraAndWallAndGround(_percentPerFrame)
+//moves all constant elements of the game (Camera, walls/roof, and the ground) to follow the plane
+//Called:   In the draw loop (Every frame)
+//Input:    _percentPerFrame - numerical value - between 0 & 100 - how much of the distance to the plane the elements move each frame - higher percentages result in jerky movement, lower result in the plane going off screen
+//Return:   moves camera x,y towards the plane x,y
+//          moves ground x towards the plane x
+//          moves wallTop (roof) x towards the plane x
 //--------------------------------------------
 function moveCameraAndWallAndGround(_percentPerFrame) {
     camera.x += ((plane.x - camera.x) * (_percentPerFrame / 100)) + (1 / 14 * screenWidth);
@@ -151,7 +164,13 @@ function moveCameraAndWallAndGround(_percentPerFrame) {
 }
 
 //--------------------------------------------
-//Take keyboard input
+//takeKeyboardInput()
+//Recieves keyboard input and adjusts variables accordingly
+//Called:   In the draw loop (Every frame)
+//Input:    N/A
+//Return:   Throttle - numerical value - between 0 & 120 - increased if w pressed, decreased if s pressed
+//          Pitch - numerical value - between -65 & 65 - increased if a pressed, decreased is d pressed
+//          MissileTimer - numerical value between 0 & 300- if space pressed set to 300, else no change
 //--------------------------------------------
 function takeKeyboardInput() {
     if (kb.pressing('w')) {
@@ -186,11 +205,13 @@ function takeKeyboardInput() {
         pitch = 0;
     }
 
-    if (kb.presses('shift') && missileTimer == 0) {
+    if (kb.presses('shift') && missileTimer <= 0) {
         missileTimer = 300;
         launchMissile(plane.x, plane.y)
         console.log(mouseX, mouseY)
     }
+
+
 
     if (kb.presses('space') && chaffRemaining > 9) {
         chaffRemaining -= 10;
@@ -206,9 +227,19 @@ function takeKeyboardInput() {
     return pitch, missileTimer, throttle;
 }
 
+//--------------------------------------------
+//killEnemy(_enemyHit, _missile)
+//Interaction between missile and enemy - kills both when they collide
+//Called:   when the player launched missile collides with an element of the enemyGroup
+//Input:    _enemyHit - the spefic sprite within the enemyGroup that was hit
+//          _missile - the missile that collides with the enemy
+//Return:   removes both _enemyHit & _missile
+//          creates 100 explosion particles with a lifetime of 150 frames
+//--------------------------------------------
+
 function killEnemy(_enemyHit, _missile) {
     console.log("killEnemy()")
-    let collisionSpeed = enemyGroup.vel.x;
+    let collisionSpeed = calculateHorizontalVelocityVectors(throttle, 0, 1);
     let collisionX = _enemyHit.x;
     let collisionY = _enemyHit.y;
     _missile.remove()
@@ -218,17 +249,21 @@ function killEnemy(_enemyHit, _missile) {
         particle = new Sprite(collisionX, collisionY, 5, 'd')
         particle.color = '#FF7700';
         particle.strokeWeight = 0;
-        particle.vel.x = collisionSpeed * random(-100, 100) / 100;
+        particle.vel.x = collisionSpeed + random(-30, 30);
         particle.vel.y = random(-50, 50);
         particle.life = 150;
         particleGroup.add(particle)
     }
 }
 
-
-//------------------------------------------------------------
-//function for the enemies to attack the player by launching a missile
-//_launchX is a numerical value - sets where the missile to attack the player spawns
+//--------------------------------------------
+//attackPlayer(_launchX, _launchY)
+//Creates a new missile to attack the player
+//Called:   In the createEnemy() function 
+//Input:    _launchX - The X position of where the missile spawns  
+//          _launchY - The Y position of where the missile spawns
+//Return:   enemyMissile - Sprite, created at _launchX, _launchY, exists for 300 frames
+//--------------------------------------------
 function attackPlayer(_launchX, _launchY) {
     console.log('attackPlayer()');
     enemyMissile = new Sprite(_launchX, _launchY, 40, 20, 'k');
@@ -240,9 +275,10 @@ function attackPlayer(_launchX, _launchY) {
     enemyMissile.life = 300;
 }
 
-
-
-
+//------------------------------------------------------
+//draw loop
+//runs every frame
+//------------------------------------------------------
 function draw() {
     if (gameRunning) {
         enemyTimer -= 1;
