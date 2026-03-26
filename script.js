@@ -85,7 +85,7 @@ function createEnemy(_playerX, _playerY) {
     enemy.image.scale.y = 0.3;
     enemy.image.scale.x = -0.3;
 
-    if (Math.round(Math.random(5) == 0)) {
+    if (Math.round(Math.random() *5) == 0) {
         attackPlayer(enemy.x, enemy.y)
     }
 
@@ -141,7 +141,7 @@ function calculateVerticalVelocityVectors(_speed, _angle, _liftOfObject) {
     _angle = _angle * (Math.PI / 180)
     //calculations 
     let verticalSpeed = 0;
-    verticalSpeed = ((-1 * Math.abs(_speed * (Math.sin(_angle) + Math.sin(90 + _angle) * _liftOfObject))) * 1 / (FRAMERATE)) + GRAVITY;
+    verticalSpeed = ((-1 * (_speed * (Math.sin(_angle) + Math.sin(90 + _angle) * _liftOfObject))) * 1 / (FRAMERATE)) + GRAVITY;
 
     //hardcaps max vertical speed to stop play skyrocketing
     if (verticalSpeed < -35) {
@@ -303,7 +303,7 @@ function draw() {
                 enemyMissile.x += (plane.x - enemyMissile.x) * 0.05;
                 enemyMissile.y += (plane.y - enemyMissile.y) * 0.05;
                 if (enemyMissile.collides(plane)) {
-                    alert("You died - your score was: " + score)
+                    alert("You died - your score was: " + score <br> + 'Reload the page to play again (Ctrl + R')
                     gameRunning = false;
                 }
             }
