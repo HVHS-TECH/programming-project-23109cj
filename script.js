@@ -41,7 +41,6 @@ function preload() {
 function setup() {
     console.log('setup()')
     frameRate(FRAMERATE)
-    //angleMode(DEGREES);
     screenHeight = windowHeight;
     screenWidth = windowWidth
     groundHeight = screenHeight - screenHeight / 6;
@@ -119,7 +118,9 @@ function launchMissile(_Xpos, _Ypos) {
 //Return:   horizontalSpeed - numerical value - the result of the calculations 
 //--------------------------------------------
 function calculateHorizontalVelocityVectors(_speed, _angle, _liftOfObject) {
+    //convert to radians
     _angle = _angle * (Math.PI / 180)
+    //calculation
     let horizontalSpeed = 0;
     horizontalSpeed = (Math.abs(_speed * (Math.cos(_angle) - Math.cos(90 - _angle) * _liftOfObject)));
     return horizontalSpeed;
@@ -136,10 +137,13 @@ function calculateHorizontalVelocityVectors(_speed, _angle, _liftOfObject) {
 //Return:   verticalSpeed - numerical value >= -35 - the result of the calculations 
 //--------------------------------------------
 function calculateVerticalVelocityVectors(_speed, _angle, _liftOfObject) {
+    //convert to radians
     _angle = _angle * (Math.PI / 180)
+    //calculations 
     let verticalSpeed = 0;
     verticalSpeed = ((-1 * Math.abs(_speed * (Math.sin(_angle) + Math.sin(90 + _angle) * _liftOfObject))) * 1 / (FRAMERATE)) + GRAVITY;
 
+    //hardcaps max vertical speed to stop play skyrocketing
     if (verticalSpeed < -35) {
         verticalSpeed = -35;
     }
