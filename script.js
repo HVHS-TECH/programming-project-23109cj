@@ -1,5 +1,6 @@
 console.log("script.js")
 
+//defining variables 
 let throttle = 0.5;
 let pitch = 0;
 let cnv;
@@ -14,6 +15,7 @@ let enemyMissileExists = false;
 let gameRunning = true;
 let chaffRemaining = 150;
 let chaffGroup;
+let enemyAttack = 0;
 
 const GRAVITY = 0.15;
 const LIFTCOEFFICENT = 0.3025;
@@ -31,6 +33,7 @@ let screenHeight;       //as var so it can be read from all functions - value ne
 
 function preload() {
     console.log('preload()')
+    //loading images
     imgPlane = loadImage('Images/A-7.svg');
     imgCloud = loadImage('Images/Cloud.png');
     imgMissile = loadImage('Images/missile.png');
@@ -40,6 +43,7 @@ function preload() {
 
 function setup() {
     console.log('setup()')
+    //defining constants that require a P5 function to work - have to be initalised at begining to be global 
     frameRate(FRAMERATE)
     screenHeight = windowHeight;
     screenWidth = windowWidth
@@ -47,45 +51,62 @@ function setup() {
 
     cnv = new Canvas(screenWidth, screenHeight);
 
+    //creating cloud
     cloud = new Sprite(screenWidth, random(0, groundHeight), 10, 10, 'n')
     cloud.image = (imgCloud);
     cloud.image.scale = 0.5;
 
+    //creating player plane
     plane = new Sprite(screenWidth / 6, groundHeight, 20, 20, 'd');
     plane.image = (imgPlane);
     plane.image.scale.y = 0.1;
     plane.image.scale.x = -0.1;
     plane.bouncieness = 0;
 
+    //creating ground
     ground = new Sprite(screenWidth / 2, groundHeight / 3 * 4.35, screenWidth, groundHeight, 'k');
     ground.color = '#00ff00';
     ground.bouncieness = 0;
 
+    //creating Roof/wall at top of game
     wallTop = new Sprite(screenWidth / 2, screenHeight / 2 - screenHeight, screenWidth, 5, 'k')
     wallTop.visible = false;
 
+    //creating groups - already defined to be global
     enemyGroup = new Group()
     particleGroup = new Group()
     chaffGroup = new Group()
 }
 
-
+//--------------------------------------------
+//createEnemy(_playerX, _playerY)
+//Creates an enemy plane 
+//Called:   In the draw loop - every 500 frames
+//Input:    _playerX - numerical value - lets the enemy spawn a constant distance from the players X
+//          _playerY - numerical value - lets the enemy spawn at the same height as the player
+//Return:   Creates an enemy at the left edge of the screen, +- 100 pixels in height from the player, and checks to see if it should attack or not
+//--------------------------------------------
 function createEnemy(_playerX, _playerY) {
     console.log('createEnemy()')
     let inSky = false
+    enemyAttack += 1;
     enemy = new Sprite(_playerX - screenWidth / 2, random(_playerY - 100, _playerY + 100), 80, 30, 'd')
+
+    //makes sure the enemy planes aren't in the ground
     while (inSky == false) {
-        if (enemy.overlaps(ground)) {
+        if (enemy.colliding(ground)) {
             enemy.y -= 100;
         } else {
             inSky = true;
         }
     }
+    //adds image to enemy
     enemy.image = (imgEnemy);
     enemy.image.scale.y = 0.3;
     enemy.image.scale.x = -0.3;
 
-    if (Math.round(Math.random(5) == 0)) {
+    //decides if enemy should attack player
+    if (enemyAttack == 2) {
         attackPlayer(enemy.x, enemy.y)
     }
 
@@ -93,10 +114,14 @@ function createEnemy(_playerX, _playerY) {
 }
 
 
-//--------------------------------------------------------
-//Launch Missle
-//creates a new sprite, calc its velocity to be faster than plane by 25%, assigns img
-//--------------------------------------------------------
+//--------------------------------------------
+//launchMissile(_Xpos, _Ypos)
+//Creates a new missile sprite at the X & Y positions passed
+//Called:   When the player presses the space bar - can only be called every 5 seconds 
+//Input:    _Xpos - numerical value - Is the x position where the missile is created
+//          _Ypos - numerical value - Is the y position where the missile is created
+//Return:   Creates the missile sprite at _Xpos, _Ypos with the same Y vel and a 25% faster Xvel than the player plane
+//--------------------------------------------
 function launchMissile(_Xpos, _Ypos) {
     console.log('launchMissile()')
     missile = new Sprite(_Xpos - 20, _Ypos - 10, 40, 20, 'k');
@@ -270,9 +295,9 @@ function killEnemy(_enemyHit, _missile) {
 //--------------------------------------------
 function attackPlayer(_launchX, _launchY) {
     console.log('attackPlayer()');
+    enemyMissileExists = true;
     enemyMissile = new Sprite(_launchX, _launchY, 40, 20, 'k');
     enemyMissile.vel.x = calculateHorizontalVelocityVectors(throttle, 0, 1)
-    enemyMissileExists = true;
     enemyMissile.image = (imgMissile)
     enemyMissile.scale.x = -0.3;
     enemyMissile.scale.y = 0.3;
