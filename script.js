@@ -325,8 +325,7 @@ function drawGame(){
                 enemyMissile.x += (plane.x - enemyMissile.x) * 0.05;
                 enemyMissile.y += (plane.y - enemyMissile.y) * 0.05;
                 if (enemyMissile.collides(plane)) {
-                    alert("You died - your score was: " + score  + '\n Reload the page to play again (Ctrl + R)')
-                    gameRunning = false;
+                    gameState = "end"
                 }
             }
         }
@@ -371,9 +370,32 @@ function drawGame(){
         text("Score: " + score, 50, 100);
 }
 function drawMenu(){
-
+    background('#ffffff')
+    plane.visible = false;
+    ground.visible = false;
+    cloud.visible = false; 
+    if(kb.presses('enter')){
+        gameState = "game";
+        plane.visible = true;
+        ground.visible = true;
+        cloud.visible = true;
+    }
+    text("Welcome to the plane flying thingymajig game \n The controls are: \n W to accelerate \nS to decelerate \nA to pitch(rotate) the plane up,\nD to pitch(rotate) the plane down \nShift to launch a missile - missiles follow mouse\n Press ENTER to start", 250, 400)
+    text("Sources (Note - I have put all images through https://www.remove.bg/ to remove white backgrounds): \n Missile Image: https://www.deviantart.com/bagera3005/art/AIM-9X-Sidewinder-883880863  - cropped for use in game\nPlayer Plane (A-7): https://upload.wikimedia.org/wikipedia/commons/9/93/A-7_Corsair_II.svg \nEnemy Plane (F-14): https://upload.wikimedia.org/wikipedia/commons/5/5a/F14_2_Wiki.jpg \n Cloud: https://upload.wikimedia.org/wikipedia/commons/7/7e/Cloud_PNG_Image.png", 500, 600);
 }
 function drawEnd(){
+    background('#ffffff')
+    plane.visible = false;
+    ground.visible = false;
+    cloud.visible = false;
+    text("You died - your score was: " + score  + '\n Press enter to player again', windowWidth/2, windowHeight/2);
+
+    if(kb.presses('enter')){
+        gameState = "game";
+        plane.visible = true;
+        ground.visible = true;
+        cloud.visible = true;
+    }
 
 }
 //------------------------------------------------------
