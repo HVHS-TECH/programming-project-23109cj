@@ -1,6 +1,7 @@
 console.log("script.js")
 
 //defining variables 
+let gameState = "menu";
 let throttle = 0.5;
 let pitch = 0;
 let cnv;
@@ -166,7 +167,7 @@ function calculateVerticalVelocityVectors(_speed, _angle, _liftOfObject) {
     _angle = _angle * (Math.PI / 180)
     //calculations 
     let verticalSpeed = 0;
-    verticalSpeed = ((-1 * Math.abs(_speed * (Math.sin(_angle) + Math.sin(90 + _angle) * _liftOfObject))) * 1 / (FRAMERATE)) + GRAVITY;
+    verticalSpeed = ((-1 * (_speed * (Math.sin(_angle) + Math.sin(90 + _angle) * _liftOfObject))) * 1 / (FRAMERATE)) + GRAVITY;
 
     //hardcaps max vertical speed to stop play skyrocketing
     if (verticalSpeed < -35) {
@@ -304,13 +305,9 @@ function attackPlayer(_launchX, _launchY) {
     enemyMissile.life = 300;
 }
 
-//------------------------------------------------------
-//draw loop
-//runs every frame
-//------------------------------------------------------
-function draw() {
-    if (gameRunning) {
-        enemyTimer -= 1;
+
+function drawGame(){
+    enemyTimer -= 1;
         background('#0000ff');
         takeKeyboardInput()
 
@@ -328,7 +325,7 @@ function draw() {
                 enemyMissile.x += (plane.x - enemyMissile.x) * 0.05;
                 enemyMissile.y += (plane.y - enemyMissile.y) * 0.05;
                 if (enemyMissile.collides(plane)) {
-                    alert("You died - your score was: " + score)
+                    alert("You died - your score was: " + score  + '\n Reload the page to play again (Ctrl + R)')
                     gameRunning = false;
                 }
             }
@@ -372,5 +369,23 @@ function draw() {
 
         //updates score counter
         text("Score: " + score, 50, 100);
+}
+function drawMenu(){
+
+}
+function drawEnd(){
+
+}
+//------------------------------------------------------
+//draw loop
+//runs every frame
+//------------------------------------------------------
+function draw() {
+    if(gameState == "menu"){
+        drawMenu()
+    }else if(gameState == "game"){
+        drawGame()
+    } else if(gameState == "end"){
+        drawEnd()
     }
 }
