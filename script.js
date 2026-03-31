@@ -39,7 +39,6 @@ function preload() {
     imgCloud = loadImage('Images/Cloud.png');
     imgMissile = loadImage('Images/missile.png');
     imgEnemy = loadImage('Images/F-14.png');
-
 }
 
 function setup() {
@@ -101,19 +100,19 @@ function createEnemy(_playerX, _playerY) {
             inSky = true;
         }
     }
+
     //adds image to enemy
     enemy.image = (imgEnemy);
     enemy.image.scale.y = 0.3;
     enemy.image.scale.x = -0.3;
 
-    //decides if enemy should attack player
+    //decides if enemy should attack player - set so every second plane attacks
     if (enemyAttack == 2) {
         attackPlayer(enemy.x, enemy.y)
     }
 
     enemyGroup.add(enemy)
 }
-
 
 //--------------------------------------------
 //launchMissile(_Xpos, _Ypos)
@@ -266,7 +265,6 @@ function takeKeyboardInput() {
 //Return:   removes both _enemyHit & _missile
 //          creates 100 explosion particles with a lifetime of 150 frames
 //--------------------------------------------
-
 function killEnemy(_enemyHit, _missile) {
     console.log("killEnemy()")
     let collisionSpeed = calculateHorizontalVelocityVectors(throttle, 0, 1);
@@ -296,6 +294,7 @@ function killEnemy(_enemyHit, _missile) {
 //--------------------------------------------
 function attackPlayer(_launchX, _launchY) {
     console.log('attackPlayer()');
+    enemyAttack = 0;
     enemyMissileExists = true;
     enemyMissile = new Sprite(_launchX, _launchY, 40, 20, 'k');
     enemyMissile.vel.x = calculateHorizontalVelocityVectors(throttle, 0, 1)
@@ -305,109 +304,159 @@ function attackPlayer(_launchX, _launchY) {
     enemyMissile.life = 300;
 }
 
-
-function drawGame(){
+//--------------------------------------------
+//drawGame()
+//main function for running the game - checks for collisions, updates positions,  
+//Called:   in draw() - active after the player starts the game, until they die 
+//Input:    N/A
+//Return:   N/A
+//--------------------------------------------
+function drawGame() {
     enemyTimer -= 1;
-        background('#0000ff');
-        takeKeyboardInput()
+    background('#0000ff');
+    takeKeyboardInput()
 
-        //missile collisions
-        if (missileTimer >= 1) {
-            enemyGroup.collides(missile, killEnemy)
-            missileTimer -= 1;
-        }
+    //missile collisions
+    if (missileTimer >= 1) {
+        enemyGroup.collides(missile, killEnemy)
+        missileTimer -= 1;
+    }
 
-        //enemies attacking player
-        if (enemyMissileExists) {
-            if (enemyMissile.removed) {
-                enemyMissileExists = false;
-            } else {
-                enemyMissile.x += (plane.x - enemyMissile.x) * 0.05;
-                enemyMissile.y += (plane.y - enemyMissile.y) * 0.05;
-                if (enemyMissile.collides(plane)) {
-                    gameState = "end"
-                }
+    //enemies attacking player
+    if (enemyMissileExists) {
+        if (enemyMissile.removed) {
+            enemyMissileExists = false;
+        } else {
+            enemyMissile.x += (plane.x - enemyMissile.x) * 0.05;
+            enemyMissile.y += (plane.y - enemyMissile.y) * 0.05;
+            if (enemyMissile.collides(plane)) {
+                gameState = "end"
             }
         }
-
-        //chaff collisions
-        if (enemyMissileExists && chaffGroup.collides(enemyMissile)) {
-            enemyMissile.remove()
-            enemyMissileExists = false;
-        }
-
-        //spawn enemy
-        if (enemyTimer <= 0) {
-            createEnemy(plane.x, plane.y)
-            enemyTimer = 500;
-        }
-
-        //missile movement & removal after time
-        if (missileTimer != 0) {
-            missile.x += (mouse.x - missile.x) * 0.075;
-            missile.y += (mouse.y - missile.y) * 0.075;
-        }
-
-        //move clouds accros screen
-        if (cloud.x < camera.x - screenWidth / 2) {
-            cloud.x = camera.x + screenWidth / 2;
-        }
-
-        //cloud velocity 
-        cloud.vel.x = plane.vel.x / 31.5;
-
-        //move enemies so they are moving slightly faster than the plane
-        enemyGroup.vel.x = plane.vel.x + 10;
-
-        //Apply rotation and movement to the plane
-        plane.rotation = pitch;
-        plane.vel.x = calculateHorizontalVelocityVectors(throttle, pitch, LIFTCOEFFICENT);
-        plane.vel.y = calculateVerticalVelocityVectors(throttle, pitch, LIFTCOEFFICENT);
-
-        moveCameraAndWallAndGround(20)
-
-        //updates score counter
-        text("Score: " + score, 50, 100);
-}
-function drawMenu(){
-    background('#ffffff')
-    plane.visible = false;
-    ground.visible = false;
-    cloud.visible = false; 
-    if(kb.presses('enter')){
-        gameState = "game";
-        plane.visible = true;
-        ground.visible = true;
-        cloud.visible = true;
     }
-    text("Welcome to the plane flying thingymajig game \n The controls are: \n W to accelerate \nS to decelerate \nA to pitch(rotate) the plane up,\nD to pitch(rotate) the plane down \nShift to launch a missile - missiles follow mouse\n Press ENTER to start", 250, 400)
-    text("Sources (Note - I have put all images through https://www.remove.bg/ to remove white backgrounds): \n Missile Image: https://www.deviantart.com/bagera3005/art/AIM-9X-Sidewinder-883880863  - cropped for use in game\nPlayer Plane (A-7): https://upload.wikimedia.org/wikipedia/commons/9/93/A-7_Corsair_II.svg \nEnemy Plane (F-14): https://upload.wikimedia.org/wikipedia/commons/5/5a/F14_2_Wiki.jpg \n Cloud: https://upload.wikimedia.org/wikipedia/commons/7/7e/Cloud_PNG_Image.png", 500, 600);
+
+    //chaff collisions
+    if (enemyMissileExists && chaffGroup.collides(enemyMissile)) {
+        enemyMissile.remove()
+        enemyMissileExists = false;
+    }
+
+    //spawn enemy
+    if (enemyTimer <= 0) {
+        createEnemy(plane.x, plane.y)
+        enemyTimer = 500;
+    }
+
+    //missile movement & removal after time
+    if (missileTimer != 0) {
+        missile.x += (mouse.x - missile.x) * 0.075;
+        missile.y += (mouse.y - missile.y) * 0.075;
+    }
+
+    //move clouds accros screen
+    if (cloud.x < camera.x - screenWidth / 2) {
+        cloud.x = camera.x + screenWidth / 2;
+    }
+
+    //cloud velocity 
+    cloud.vel.x = plane.vel.x / 31.5;
+
+    //move enemies so they are moving slightly faster than the plane
+    enemyGroup.vel.x = plane.vel.x + 10;
+
+    //Apply rotation and movement to the plane
+    plane.rotation = pitch;
+    plane.vel.x = calculateHorizontalVelocityVectors(throttle, pitch, LIFTCOEFFICENT);
+    plane.vel.y = calculateVerticalVelocityVectors(throttle, pitch, LIFTCOEFFICENT);
+
+    moveCameraAndWallAndGround(20)
+
+    //updates score counter
+    text("Score: " + score, 50, 100);
 }
-function drawEnd(){
+
+//--------------------------------------------
+//drawMenu()
+//draws the menu screen with instructions and sources
+//Called:   in draw() - active when the player loads the game, and after they exit the end game screen
+//Input:    N/A
+//Return:   N/A
+//--------------------------------------------
+function drawMenu() {
     background('#ffffff')
     plane.visible = false;
     ground.visible = false;
     cloud.visible = false;
-    text("You died - your score was: " + score  + '\n Press enter to player again', windowWidth/2, windowHeight/2);
 
-    if(kb.presses('enter')){
+    //start game
+    if (kb.presses('enter')) {
+        reset();
         gameState = "game";
-        plane.visible = true;
-        ground.visible = true;
-        cloud.visible = true;
+    }
+    text("Welcome to the plane flying thingymajig game \n The controls are: \n W to accelerate \nS to decelerate \nA to pitch(rotate) the plane up,\nD to pitch(rotate) the plane down \nShift to launch a missile - missiles follow mouse\n Press ENTER to start", 250, 400)
+    text("Sources (Note - I have put all images through https://www.remove.bg/ to remove white backgrounds): \n Missile Image: https://www.deviantart.com/bagera3005/art/AIM-9X-Sidewinder-883880863  - cropped for use in game\nPlayer Plane (A-7): https://upload.wikimedia.org/wikipedia/commons/9/93/A-7_Corsair_II.svg \nEnemy Plane (F-14): https://upload.wikimedia.org/wikipedia/commons/5/5a/F14_2_Wiki.jpg \n Cloud: https://upload.wikimedia.org/wikipedia/commons/7/7e/Cloud_PNG_Image.png", 500, 600);
+}
+
+//--------------------------------------------
+//drawEnd()
+//draws the screen for when the player dies - displays score, makes sprites invisible
+//Called:   in draw() - active after the player dies 
+//Input:    N/A
+//Return:   N/A
+//--------------------------------------------
+function drawEnd() {
+    background('#ffffff')
+    plane.visible = false;
+    ground.visible = false;
+    cloud.visible = false;
+    text("You died - your score was: " + score + '\n Press enter to return to main menu', windowWidth / 2, windowHeight / 2);
+
+    //return to main menu
+    if (kb.presses('enter')) {
+        gameState = "menu";
+        reset();
     }
 
 }
-//------------------------------------------------------
-//draw loop
-//runs every frame
-//------------------------------------------------------
+
+//--------------------------------------------
+//reset()
+//resets all variables to inital values, makes plane, ground and cloud visible 
+//Called:   when enter pressed to start or restart the game - in the drawMenu() or drawEnd() functions 
+//Input:    N/A
+//Return:   N/A
+//--------------------------------------------
+function reset() {
+    throttle = 0.5;
+    pitch = 0;
+    missileTimer = 0;
+    score = 0;
+    enemyTimer = 500;
+    enemyMissileExists = false;
+    gameRunning = true;
+    chaffRemaining = 150;
+    enemyAttack = 0;
+
+    plane.x = screenWidth / 6;
+    plane.y = groundHeight;
+    plane.visible = true;
+    ground.visible = true;
+    cloud.visible = true;
+}
+
+//--------------------------------------------
+//draw()
+//runs every frame - checks to see which state the game is in, and decides which screen to display
+//Called:   Every frame
+//Input:    N/A
+//Return:   N/A
+//--------------------------------------------
 function draw() {
-    if(gameState == "menu"){
+    if (gameState == "menu") {
         drawMenu()
-    }else if(gameState == "game"){
+    } else if (gameState == "game") {
         drawGame()
-    } else if(gameState == "end"){
+    } else if (gameState == "end") {
         drawEnd()
     }
 }
