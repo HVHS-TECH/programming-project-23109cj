@@ -296,7 +296,7 @@ function attackPlayer(_launchX, _launchY) {
     console.log('attackPlayer()');
     enemyAttack = 0;
     enemyMissileExists = true;
-    enemyMissile = new Sprite(_launchX, _launchY, 40, 20, 'k');
+    enemyMissile = new Sprite(_launchX, _launchY, 40, 20, 'd');
     enemyMissile.vel.x = calculateHorizontalVelocityVectors(throttle, 0, 1)
     enemyMissile.image = (imgMissile)
     enemyMissile.scale.x = -0.3;
@@ -312,6 +312,7 @@ function attackPlayer(_launchX, _launchY) {
 //Return:   N/A
 //--------------------------------------------
 function drawGame() {
+    plane.visible = true;
     enemyTimer -= 1;
     background('#0000ff');
     takeKeyboardInput()
@@ -406,6 +407,8 @@ function drawMenu() {
 //--------------------------------------------
 function drawEnd() {
     background('#ffffff')
+    enemyGroup.deleteAll()
+    enemyMissile.visible = false;
     plane.visible = false;
     ground.visible = false;
     cloud.visible = false;
@@ -439,6 +442,9 @@ function reset() {
 
     plane.x = screenWidth / 6;
     plane.y = groundHeight;
+    moveCameraAndWallAndGround(100)
+
+    enemyGroup.deleteAll()
     plane.visible = true;
     ground.visible = true;
     cloud.visible = true;
