@@ -439,9 +439,7 @@ function drawEnd() {
     //Removing sprites/making them invisible
     enemyGroup.deleteAll();
     chaffGroup.deleteAll();
-    plane.remove();
-    ground.remove();
-    cloud.remove();
+    
     enemyMissile.visible = false;
     plane.visible = false;
     ground.visible = false;
