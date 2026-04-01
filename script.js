@@ -4,7 +4,7 @@ console.log("script.js")
 let gameState = "menu";
 let throttle = 0.5;
 let pitch = 0;
-let cnv;
+let canvas;
 let missileTimer = 0;
 let missile;
 let score = 0;
@@ -17,14 +17,14 @@ let gameRunning = true;
 let chaffRemaining = 150;
 let chaffGroup;
 let enemyAttack = 0;
+let groundHeight;       //as var so it can be read from all functions - value never changed after setup()
+let screenWidth;        //as var so it can be read from all functions - value never changed after setup()
+let screenHeight;       //as var so it can be read from all functions - value never changed after setup()
 
 const GRAVITY = 0.15;
 const LIFTCOEFFICENT = 0.3025;
 const FRAMERATE = 60;
 const PITCHSENSITIVITY = 0.22;
-let groundHeight;       //as var so it can be read from all functions - value never changed after setup()
-let screenWidth;        //as var so it can be read from all functions - value never changed after setup()
-let screenHeight;       //as var so it can be read from all functions - value never changed after setup()
 
 
 //plane img source = https://upload.wikimedia.org/wikipedia/commons/9/93/A-7_Corsair_II.svg   -- Is creative commons - found by filtering google for creative commons only
@@ -40,7 +40,7 @@ let screenHeight;       //as var so it can be read from all functions - value ne
 //Return:   N/A
 //----------------------------------------------------
 function preload() {
-    console.log('preload()')
+    console.log('preload()');
     //loading images
     imgPlane = loadImage('Images/A-7.svg');
     imgCloud = loadImage('Images/Cloud.png');
@@ -56,17 +56,17 @@ function preload() {
 //Return:   N/A
 //----------------------------------------------------
 function setup() {
-    console.log('setup()')
+    console.log('setup()');
     //defining constants that require a P5 function to work - have to be initalised at begining to be global 
-    frameRate(FRAMERATE)
+    frameRate(FRAMERATE);
     screenHeight = windowHeight;
     screenWidth = windowWidth;
     groundHeight = screenHeight - screenHeight / 6;
 
-    cnv = new Canvas(screenWidth, screenHeight);
+    canvas = new Canvas(screenWidth, screenHeight);
 
     //creating cloud
-    cloud = new Sprite(screenWidth, random(0, groundHeight), 10, 10, 'n')
+    cloud = new Sprite(screenWidth, random(0, groundHeight), 10, 10, 'n');
     cloud.image = (imgCloud);
     cloud.image.scale = 0.5;
 
@@ -293,7 +293,7 @@ function killEnemy(_enemyHit, _missile) {
 
     //create explosion affect
     for (i = 0; i < 100; i++) {
-        particle = new Sprite(collisionX, collisionY, 5, 'd')
+        particle = new Sprite(collisionX, collisionY, 5, 'd');
         particle.color = '#FF7700';
         particle.strokeWeight = 0;
         particle.vel.x = collisionSpeed + random(-30, 30);
@@ -387,7 +387,7 @@ function drawGame() {
         cloud.x = camera.x + screenWidth / 2;
     }
 
-    //cloud velocity 
+    //cloud velocity - literal to adjust velocity
     cloud.vel.x = plane.vel.x / 31.5;
 
     //move enemies so they are moving slightly faster than the plane
@@ -438,15 +438,8 @@ function drawMenu() {
 //--------------------------------------------
 function drawEnd() {
     background('#ffffff');
-    //Removing sprites/making them invisible
-    //enemyGroup.deleteAll();
-    //chaffGroup.deleteAll();
     
-    //enemyMissile.visible = false;
-    //plane.visible = false;
-    //ground.visible = false;
-    //cloud.visible = false;
-    text("You died - your score was: " + score + '\n Press enter to return to main menu', windowWidth / 2, windowHeight / 2);
+    text("You died - your score was: " + score + '\n Press ENTER to return to main menu', windowWidth / 2, windowHeight / 2);
 
     //return to main menu
     if (kb.presses('enter')) {
@@ -458,7 +451,7 @@ function drawEnd() {
 //--------------------------------------------
 //reset()
 //resets all variables to inital values, makes plane, ground and cloud visible 
-//Called:   when enter pressed to start or restart the game - in the drawMenu() or drawEnd() functions 
+//Called:   when ENTER pressed to start or restart the game - in the drawMenu() function
 //Input:    N/A
 //Return:   N/A
 //--------------------------------------------
@@ -476,6 +469,7 @@ function reset() {
     chaffRemaining = 150;
     enemyAttack = 0;
 
+    //recreating sprites etc
     setup();
 }
 
