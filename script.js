@@ -57,20 +57,24 @@ function setup() {
     cloud.image.scale = 0.5;
 
     //creating player plane
-    plane = new Sprite(screenWidth / 6, groundHeight, 20, 20, 'd');
+    plane = new Sprite(screenWidth / 6, groundHeight, 80, 30, 'd');
     plane.image = (imgPlane);
     plane.image.scale.y = 0.1;
     plane.image.scale.x = -0.1;
     plane.bouncieness = 0;
 
     //creating ground
-    ground = new Sprite(screenWidth / 2, groundHeight / 3 * 4.35, screenWidth, groundHeight, 'k');
+    ground = new Sprite(screenWidth / 2, groundHeight / 3 * 4.35, screenWidth * 2, groundHeight, 'k');
     ground.color = '#00ff00';
     ground.bouncieness = 0;
 
     //creating Roof/wall at top of game
     wallTop = new Sprite(screenWidth / 2, screenHeight / 2 - screenHeight, screenWidth, 5, 'k')
     wallTop.visible = false;
+
+    //need to be removed after testing
+    plane.debug =true;
+    ground.debug =true;
 
     //creating groups - already defined to be global
     enemyGroup = new Group()
@@ -88,23 +92,23 @@ function setup() {
 //--------------------------------------------
 function createEnemy(_playerX, _playerY) {
     console.log('createEnemy()')
-    let inSky = false
+    let ySpawn = random(_playerY - 100, _playerY + 100)
+    while (ySpawn >= groundHeight){
+        ySpawn -= 10;
+    }
     enemyAttack += 1;
-    enemy = new Sprite(_playerX - screenWidth / 2, random(_playerY - 100, _playerY + 100), 80, 30, 'd')
+    enemy = new Sprite(_playerX - screenWidth / 2, ySpawn, 80, 30, 'd')
 
     //makes sure the enemy planes aren't in the ground
-    while (inSky == false) {
-        if (enemy.colliding(ground)) {
-            enemy.y -= 100;
-        } else {
-            inSky = true;
-        }
-    }
+    
 
     //adds image to enemy
     enemy.image = (imgEnemy);
     enemy.image.scale.y = 0.3;
     enemy.image.scale.x = -0.3;
+
+    //remove after testing
+    enemy.debug = true;
 
     //decides if enemy should attack player - set so every second plane attacks
     if (enemyAttack == 2) {
@@ -124,13 +128,17 @@ function createEnemy(_playerX, _playerY) {
 //--------------------------------------------
 function launchMissile(_Xpos, _Ypos) {
     console.log('launchMissile()')
-    missile = new Sprite(_Xpos - 20, _Ypos - 10, 40, 20, 'k');
+    missile = new Sprite(_Xpos - 20, _Ypos - 10, 150, 20, 'k');
     missile.vel.x = calculateHorizontalVelocityVectors(throttle, pitch, LIFTCOEFFICENT) * 1.25
     missile.vel.y = calculateVerticalVelocityVectors(throttle, pitch, LIFTCOEFFICENT)
     missile.image = (imgMissile)
     missile.scale.x = -0.3;
     missile.scale.y = 0.3;
     missile.life = 300;
+
+    //remove after testing
+        missile.debug =true;
+
 }
 
 //--------------------------------------------
@@ -245,7 +253,7 @@ function takeKeyboardInput() {
     if (kb.presses('space') && chaffRemaining > 9) {
         chaffRemaining -= 10;
         for (i = 0; i < 10; i++) {
-            chaff = new Sprite(plane.x - 30, plane.y + random(-50, 50), 10, 'k');
+            chaff = new Sprite(plane.x - 100, plane.y + random(-50, 50), 10, 'd');
             chaff.vel.x = calculateHorizontalVelocityVectors(throttle, 0, 1) * 0.5;
             chaff.color = "#ff7600"
             chaff.life = 240;
@@ -272,7 +280,7 @@ function killEnemy(_enemyHit, _missile) {
     let collisionY = _enemyHit.y;
     _missile.remove()
     _enemyHit.remove()
-    score += 1;
+    score += 10;
     for (i = 0; i < 100; i++) {
         particle = new Sprite(collisionX, collisionY, 5, 'd')
         particle.color = '#FF7700';
@@ -296,8 +304,8 @@ function attackPlayer(_launchX, _launchY) {
     console.log('attackPlayer()');
     enemyAttack = 0;
     enemyMissileExists = true;
-    enemyMissile = new Sprite(_launchX, _launchY, 40, 20, 'd');
-    enemyMissile.vel.x = calculateHorizontalVelocityVectors(throttle, 0, 1)
+    enemyMissile = new Sprite(_launchX, _launchY, 150, 20, 'd');
+    enemyMissile.vel.x = plane.vel.x * 1.1//calculateHorizontalVelocityVectors(throttle, 0, 1)
     enemyMissile.image = (imgMissile)
     enemyMissile.scale.x = -0.3;
     enemyMissile.scale.y = 0.3;
@@ -338,6 +346,7 @@ function drawGame() {
 
     //chaff collisions
     if (enemyMissileExists && chaffGroup.collides(enemyMissile)) {
+        score +=5;
         enemyMissile.remove()
         enemyMissileExists = false;
     }
@@ -349,11 +358,15 @@ function drawGame() {
     }
 
     //missile movement & removal after time
-    if (missileTimer != 0) {
-        missile.x += (mouse.x - missile.x) * 0.075;
-        missile.y += (mouse.y - missile.y) * 0.075;
+    if(missileTimer != 0 ){
+        if (missileTimer >=  250) {
+            missile.x += (mouse.x - missile.x) * 0.075;
+            missile.y += (mouse.y - missile.y) * 0.075;
+        }else if(missileTimer >= 0){
+            missile.x = mouse.x;
+            missile.y = mouse.y;
+        }
     }
-
     //move clouds accros screen
     if (cloud.x < camera.x - screenWidth / 2) {
         cloud.x = camera.x + screenWidth / 2;
@@ -372,8 +385,9 @@ function drawGame() {
 
     moveCameraAndWallAndGround(20)
 
-    //updates score counter
+    //updates score & chaff counters
     text("Score: " + score, 50, 100);
+    text("Chaff Remaining: " + chaffRemaining, 50, 150)
 }
 
 //--------------------------------------------
@@ -408,6 +422,8 @@ function drawMenu() {
 function drawEnd() {
     background('#ffffff')
     enemyGroup.deleteAll()
+    chaffGroup.deleteAll()
+    allSprites.visible = false;
     enemyMissile.visible = false;
     plane.visible = false;
     ground.visible = false;
@@ -445,6 +461,9 @@ function reset() {
     moveCameraAndWallAndGround(100)
 
     enemyGroup.deleteAll()
+    chaffGroup.deleteAll()
+    allSprites.visible = true;
+
     plane.visible = true;
     ground.visible = true;
     cloud.visible = true;
