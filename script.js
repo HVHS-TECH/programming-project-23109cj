@@ -86,10 +86,6 @@ function setup() {
     wallTop = new Sprite(screenWidth / 2, screenHeight / 2 - screenHeight, screenWidth, 5, 'k');
     wallTop.visible = false;
 
-    //need to be removed after testing
-    plane.debug = true;
-    ground.debug = true;
-
     //creating groups - already defined to be global
     enemyGroup = new Group();
     particleGroup = new Group();
@@ -356,6 +352,12 @@ function drawGame() {
             if (enemyMissile.collides(plane)) {
                 enemyMissile.remove();
                 enemyMissileExists = false;
+                //Removing Sprites
+                plane.remove();
+                ground.remove();
+                cloud.remove();
+                enemyGroup.deleteAll();
+                chaffGroup.deleteAll();
                 gameState = "end";
             }
         }
@@ -437,13 +439,13 @@ function drawMenu() {
 function drawEnd() {
     background('#ffffff');
     //Removing sprites/making them invisible
-    enemyGroup.deleteAll();
-    chaffGroup.deleteAll();
+    //enemyGroup.deleteAll();
+    //chaffGroup.deleteAll();
     
-    enemyMissile.visible = false;
-    plane.visible = false;
-    ground.visible = false;
-    cloud.visible = false;
+    //enemyMissile.visible = false;
+    //plane.visible = false;
+    //ground.visible = false;
+    //cloud.visible = false;
     text("You died - your score was: " + score + '\n Press enter to return to main menu', windowWidth / 2, windowHeight / 2);
 
     //return to main menu
@@ -462,13 +464,6 @@ function drawEnd() {
 //--------------------------------------------
 function reset() {
     console.log('reset()');
-
-    //Removing Sprites
-    plane.remove();
-    ground.remove();
-    cloud.remove();
-    enemyGroup.deleteAll();
-    chaffGroup.deleteAll();
 
     //reseting global varibles to inital values
     throttle = 0.5;
