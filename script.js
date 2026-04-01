@@ -46,7 +46,7 @@ function setup() {
     //defining constants that require a P5 function to work - have to be initalised at begining to be global 
     frameRate(FRAMERATE)
     screenHeight = windowHeight;
-    screenWidth = windowWidth
+    screenWidth = windowWidth;
     groundHeight = screenHeight - screenHeight / 6;
 
     cnv = new Canvas(screenWidth, screenHeight);
@@ -69,17 +69,17 @@ function setup() {
     ground.bouncieness = 0;
 
     //creating Roof/wall at top of game
-    wallTop = new Sprite(screenWidth / 2, screenHeight / 2 - screenHeight, screenWidth, 5, 'k')
+    wallTop = new Sprite(screenWidth / 2, screenHeight / 2 - screenHeight, screenWidth, 5, 'k');
     wallTop.visible = false;
 
     //need to be removed after testing
-    plane.debug =true;
-    ground.debug =true;
+    plane.debug = true;
+    ground.debug = true;
 
     //creating groups - already defined to be global
-    enemyGroup = new Group()
-    particleGroup = new Group()
-    chaffGroup = new Group()
+    enemyGroup = new Group();
+    particleGroup = new Group();
+    chaffGroup = new Group();
 }
 
 //--------------------------------------------
@@ -91,16 +91,17 @@ function setup() {
 //Return:   Creates an enemy at the left edge of the screen, +- 100 pixels in height from the player, and checks to see if it should attack or not
 //--------------------------------------------
 function createEnemy(_playerX, _playerY) {
-    console.log('createEnemy()')
-    let ySpawn = random(_playerY - 100, _playerY + 100)
-    while (ySpawn >= groundHeight){
-        ySpawn -= 10;
-    }
+    console.log('createEnemy()');
     enemyAttack += 1;
-    enemy = new Sprite(_playerX - screenWidth / 2, ySpawn, 80, 30, 'd')
 
     //makes sure the enemy planes aren't in the ground
-    
+    let ySpawn = random(_playerY - 100, _playerY + 100);
+    while (ySpawn >= groundHeight) {
+        ySpawn -= 10;
+    }
+
+
+    enemy = new Sprite(_playerX - screenWidth / 2, ySpawn, 80, 30, 'd');
 
     //adds image to enemy
     enemy.image = (imgEnemy);
@@ -112,10 +113,10 @@ function createEnemy(_playerX, _playerY) {
 
     //decides if enemy should attack player - set so every second plane attacks
     if (enemyAttack == 2) {
-        attackPlayer(enemy.x, enemy.y)
+        attackPlayer(enemy.x, enemy.y);
     }
 
-    enemyGroup.add(enemy)
+    enemyGroup.add(enemy);
 }
 
 //--------------------------------------------
@@ -127,17 +128,17 @@ function createEnemy(_playerX, _playerY) {
 //Return:   Creates the missile sprite at _Xpos, _Ypos with the same Y vel and a 25% faster Xvel than the player plane
 //--------------------------------------------
 function launchMissile(_Xpos, _Ypos) {
-    console.log('launchMissile()')
+    console.log('launchMissile()');
     missile = new Sprite(_Xpos - 20, _Ypos - 10, 150, 20, 'k');
-    missile.vel.x = calculateHorizontalVelocityVectors(throttle, pitch, LIFTCOEFFICENT) * 1.25
-    missile.vel.y = calculateVerticalVelocityVectors(throttle, pitch, LIFTCOEFFICENT)
-    missile.image = (imgMissile)
+    missile.vel.x = calculateHorizontalVelocityVectors(throttle, pitch, LIFTCOEFFICENT) * 1.25;
+    missile.vel.y = calculateVerticalVelocityVectors(throttle, pitch, LIFTCOEFFICENT);
+    missile.image = (imgMissile);
     missile.scale.x = -0.3;
     missile.scale.y = 0.3;
     missile.life = 300;
 
     //remove after testing
-        missile.debug =true;
+    missile.debug = true;
 
 }
 
@@ -152,7 +153,7 @@ function launchMissile(_Xpos, _Ypos) {
 //--------------------------------------------
 function calculateHorizontalVelocityVectors(_speed, _angle, _liftOfObject) {
     //convert to radians
-    _angle = _angle * (Math.PI / 180)
+    _angle = _angle * (Math.PI / 180);
     //calculation
     let horizontalSpeed = 0;
     horizontalSpeed = (Math.abs(_speed * (Math.cos(_angle) - Math.cos(90 - _angle) * _liftOfObject)));
@@ -171,7 +172,7 @@ function calculateHorizontalVelocityVectors(_speed, _angle, _liftOfObject) {
 //--------------------------------------------
 function calculateVerticalVelocityVectors(_speed, _angle, _liftOfObject) {
     //convert to radians
-    _angle = _angle * (Math.PI / 180)
+    _angle = _angle * (Math.PI / 180);
     //calculations 
     let verticalSpeed = 0;
     verticalSpeed = ((-1 * (_speed * (Math.sin(_angle) + Math.sin(90 + _angle) * _liftOfObject))) * 1 / (FRAMERATE)) + GRAVITY;
@@ -235,7 +236,7 @@ function takeKeyboardInput() {
             if (pitch >= 85) {
                 pitch = pitch;
             } else {
-                pitch = pitch + (1 / 6 * Math.sqrt(throttle) * PITCHSENSITIVITY)
+                pitch = pitch + (1 / 6 * Math.sqrt(throttle) * PITCHSENSITIVITY);
             }
         }
     } else {
@@ -244,8 +245,8 @@ function takeKeyboardInput() {
 
     if (kb.presses('shift') && missileTimer <= 0) {
         missileTimer = 300;
-        launchMissile(plane.x, plane.y)
-        console.log(mouseX, mouseY)
+        launchMissile(plane.x, plane.y);
+        console.log(mouseX, mouseY);
     }
 
 
@@ -255,9 +256,9 @@ function takeKeyboardInput() {
         for (i = 0; i < 10; i++) {
             chaff = new Sprite(plane.x - 100, plane.y + random(-50, 50), 10, 'd');
             chaff.vel.x = calculateHorizontalVelocityVectors(throttle, 0, 1) * 0.5;
-            chaff.color = "#ff7600"
+            chaff.color = "#ff7600";
             chaff.life = 240;
-            chaffGroup.add(chaff)
+            chaffGroup.add(chaff);
         }
     }
 
@@ -274,12 +275,12 @@ function takeKeyboardInput() {
 //          creates 100 explosion particles with a lifetime of 150 frames
 //--------------------------------------------
 function killEnemy(_enemyHit, _missile) {
-    console.log("killEnemy()")
+    console.log("killEnemy()");
     let collisionSpeed = calculateHorizontalVelocityVectors(throttle, 0, 1);
     let collisionX = _enemyHit.x;
     let collisionY = _enemyHit.y;
-    _missile.remove()
-    _enemyHit.remove()
+    _missile.remove();
+    _enemyHit.remove();
     score += 10;
     for (i = 0; i < 100; i++) {
         particle = new Sprite(collisionX, collisionY, 5, 'd')
@@ -288,7 +289,7 @@ function killEnemy(_enemyHit, _missile) {
         particle.vel.x = collisionSpeed + random(-30, 30);
         particle.vel.y = random(-50, 50);
         particle.life = 150;
-        particleGroup.add(particle)
+        particleGroup.add(particle);
     }
 }
 
@@ -305,8 +306,8 @@ function attackPlayer(_launchX, _launchY) {
     enemyAttack = 0;
     enemyMissileExists = true;
     enemyMissile = new Sprite(_launchX, _launchY, 150, 20, 'd');
-    enemyMissile.vel.x = plane.vel.x * 1.1//calculateHorizontalVelocityVectors(throttle, 0, 1)
-    enemyMissile.image = (imgMissile)
+    enemyMissile.vel.x = plane.vel.x * 1.1;
+    enemyMissile.image = (imgMissile);
     enemyMissile.scale.x = -0.3;
     enemyMissile.scale.y = 0.3;
     enemyMissile.life = 300;
@@ -320,14 +321,14 @@ function attackPlayer(_launchX, _launchY) {
 //Return:   N/A
 //--------------------------------------------
 function drawGame() {
+    background('#0000ff');
     plane.visible = true;
     enemyTimer -= 1;
-    background('#0000ff');
-    takeKeyboardInput()
+    takeKeyboardInput();
 
     //missile collisions
     if (missileTimer >= 1) {
-        enemyGroup.collides(missile, killEnemy)
+        enemyGroup.collides(missile, killEnemy);
         missileTimer -= 1;
     }
 
@@ -339,34 +340,32 @@ function drawGame() {
             enemyMissile.x += (plane.x - enemyMissile.x) * 0.05;
             enemyMissile.y += (plane.y - enemyMissile.y) * 0.05;
             if (enemyMissile.collides(plane)) {
-                gameState = "end"
+                enemyMissile.remove();
+                enemyMissileExists = false;
+                gameState = "end";
             }
         }
     }
 
     //chaff collisions
     if (enemyMissileExists && chaffGroup.collides(enemyMissile)) {
-        score +=5;
-        enemyMissile.remove()
+        score += 5;
+        enemyMissile.remove();
         enemyMissileExists = false;
     }
 
     //spawn enemy
     if (enemyTimer <= 0) {
-        createEnemy(plane.x, plane.y)
+        createEnemy(plane.x, plane.y);
         enemyTimer = 500;
     }
 
-    //missile movement & removal after time
-    if(missileTimer != 0 ){
-        if (missileTimer >=  250) {
-            missile.x += (mouse.x - missile.x) * 0.075;
-            missile.y += (mouse.y - missile.y) * 0.075;
-        }else if(missileTimer >= 0){
-            missile.x = mouse.x;
-            missile.y = mouse.y;
-        }
+    //missile movement 
+    if (missileTimer > 0) {
+        missile.x = mouse.x;
+        missile.y = mouse.y;
     }
+
     //move clouds accros screen
     if (cloud.x < camera.x - screenWidth / 2) {
         cloud.x = camera.x + screenWidth / 2;
@@ -383,11 +382,11 @@ function drawGame() {
     plane.vel.x = calculateHorizontalVelocityVectors(throttle, pitch, LIFTCOEFFICENT);
     plane.vel.y = calculateVerticalVelocityVectors(throttle, pitch, LIFTCOEFFICENT);
 
-    moveCameraAndWallAndGround(20)
+    moveCameraAndWallAndGround(20);
 
     //updates score & chaff counters
     text("Score: " + score, 50, 100);
-    text("Chaff Remaining: " + chaffRemaining, 50, 150)
+    text("Chaff Remaining: " + chaffRemaining, 50, 150);
 }
 
 //--------------------------------------------
@@ -398,7 +397,7 @@ function drawGame() {
 //Return:   N/A
 //--------------------------------------------
 function drawMenu() {
-    background('#ffffff')
+    background('#ffffff');
     plane.visible = false;
     ground.visible = false;
     cloud.visible = false;
@@ -407,9 +406,11 @@ function drawMenu() {
     if (kb.presses('enter')) {
         reset();
         gameState = "game";
+        console.log('gameStart', plane.visible);
+
     }
-    text("Welcome to the plane flying thingymajig game \n The controls are: \n W to accelerate \nS to decelerate \nA to pitch(rotate) the plane up,\nD to pitch(rotate) the plane down \nShift to launch a missile - missiles follow mouse\n Press ENTER to start", 250, 400)
-    text("Sources (Note - I have put all images through https://www.remove.bg/ to remove white backgrounds): \n Missile Image: https://www.deviantart.com/bagera3005/art/AIM-9X-Sidewinder-883880863  - cropped for use in game\nPlayer Plane (A-7): https://upload.wikimedia.org/wikipedia/commons/9/93/A-7_Corsair_II.svg \nEnemy Plane (F-14): https://upload.wikimedia.org/wikipedia/commons/5/5a/F14_2_Wiki.jpg \n Cloud: https://upload.wikimedia.org/wikipedia/commons/7/7e/Cloud_PNG_Image.png", 500, 600);
+    text("Welcome to the plane flying thingymajig game \n The controls are: \n W to accelerate \nS to decelerate \nA to pitch(rotate) the plane up,\nD to pitch(rotate) the plane down \nShift to launch a missile - missiles follow mouse\n Press ENTER to start", windowWidth / 3, windowHeight * 0.4);
+    text("Sources (Note - I have put all images through https://www.remove.bg/ to remove white backgrounds): \n Missile Image: https://www.deviantart.com/bagera3005/art/AIM-9X-Sidewinder-883880863  - cropped for use in game\nPlayer Plane (A-7): https://upload.wikimedia.org/wikipedia/commons/9/93/A-7_Corsair_II.svg \nEnemy Plane (F-14): https://upload.wikimedia.org/wikipedia/commons/5/5a/F14_2_Wiki.jpg \n Cloud: https://upload.wikimedia.org/wikipedia/commons/7/7e/Cloud_PNG_Image.png", windowWidth / 3, windowHeight * 0.6);
 }
 
 //--------------------------------------------
@@ -420,10 +421,9 @@ function drawMenu() {
 //Return:   N/A
 //--------------------------------------------
 function drawEnd() {
-    background('#ffffff')
-    enemyGroup.deleteAll()
-    chaffGroup.deleteAll()
-    allSprites.visible = false;
+    background('#ffffff');
+    enemyGroup.deleteAll();
+    chaffGroup.deleteAll();
     enemyMissile.visible = false;
     plane.visible = false;
     ground.visible = false;
@@ -433,7 +433,6 @@ function drawEnd() {
     //return to main menu
     if (kb.presses('enter')) {
         gameState = "menu";
-        reset();
     }
 
 }
@@ -446,6 +445,14 @@ function drawEnd() {
 //Return:   N/A
 //--------------------------------------------
 function reset() {
+    console.log('reset()');
+
+    plane.remove();
+    ground.remove();
+    cloud.remove();
+    enemyGroup.deleteAll();
+    chaffGroup.deleteAll();
+
     throttle = 0.5;
     pitch = 0;
     missileTimer = 0;
@@ -456,17 +463,7 @@ function reset() {
     chaffRemaining = 150;
     enemyAttack = 0;
 
-    plane.x = screenWidth / 6;
-    plane.y = groundHeight;
-    moveCameraAndWallAndGround(100)
-
-    enemyGroup.deleteAll()
-    chaffGroup.deleteAll()
-    allSprites.visible = true;
-
-    plane.visible = true;
-    ground.visible = true;
-    cloud.visible = true;
+    setup();
 }
 
 //--------------------------------------------
@@ -478,10 +475,10 @@ function reset() {
 //--------------------------------------------
 function draw() {
     if (gameState == "menu") {
-        drawMenu()
+        drawMenu();
     } else if (gameState == "game") {
-        drawGame()
+        drawGame();
     } else if (gameState == "end") {
-        drawEnd()
+        drawEnd();
     }
 }
